@@ -7,7 +7,7 @@ pub struct User {
     name: String,
     id: Uuid,
     status: UserStatus,
-    spawn_hand: [Option<SpawnableEntity>; 5]
+    spawn_hand: [Option<SpawnableEntity>; 5],
 }
 
 impl User {
@@ -15,7 +15,7 @@ impl User {
         &self.name
     }
     pub fn id(&self) -> &Uuid {
-         &self.id
+        &self.id
     }
     pub fn status(&self) -> &UserStatus {
         &self.status

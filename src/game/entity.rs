@@ -5,7 +5,7 @@ pub struct SpawnableEntity {
     health: usize,
     power: usize,
 
-    attack_type: AttackType
+    attack_type: AttackType,
 }
 
 #[derive(Default, PartialEq, Eq, Clone)]
