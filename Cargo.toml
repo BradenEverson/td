@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+futures-util = { version = "0.3.30", features = ["tokio-io"] }
+http-body-util = "0.1.2"
+hyper = { version = "1.4.1", features = ["full"] }
+hyper-tungstenite = "0.14.0"
+hyper-util = { version = "0.1.7", features = ["tokio", "full"] }
+serde = { version = "1.0.206", features = ["serde_derive"] }
+tokio = { version = "1.39.2", features = ["full"] }
+tokio-tungstenite = "0.23.1"
+uuid = { version = "1.10.0", features = ["v4"] }
