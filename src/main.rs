@@ -1,5 +1,7 @@
 use hyper_util::rt::TokioIo;
+use td::server::service::ServerMessage;
 use tokio::net::TcpListener;
+use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
 #[tokio::main]
 async fn main() {
@@ -12,14 +14,23 @@ async fn main() {
         listener.local_addr().unwrap().port()
     );
 
-    loop {
-        let (socket, _) = listener
-            .accept()
-            .await
-            .expect("Error accepting incoming connection");
+    let (tx, mut rx): (
+        UnboundedSender<ServerMessage>,
+        UnboundedReceiver<ServerMessage>,
+    ) = mpsc::unbounded_channel();
 
-        let io = TokioIo::new(socket);
+    tokio::spawn(async move {
+        loop {
+            let (socket, _) = listener
+                .accept()
+                .await
+                .expect("Error accepting incoming connection");
 
-        tokio::spawn(async move {});
-    }
+            let io = TokioIo::new(socket);
+
+            tokio::spawn(async move {});
+        }
+    });
+
+    while let Some(msg) = rx.recv().await {}
 }
