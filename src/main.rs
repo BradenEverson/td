@@ -1,5 +1,6 @@
+use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
-use td::server::service::ServerMessage;
+use td::server::service::{ServerMessage, ServerService};
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
@@ -28,9 +29,21 @@ async fn main() {
 
             let io = TokioIo::new(socket);
 
-            tokio::spawn(async move {});
+            let server_service = ServerService::new(tx.clone());
+
+            tokio::spawn(async move {
+                if let Err(e) = http1::Builder::new()
+                    .serve_connection(io, server_service)
+                    .with_upgrades()
+                    .await
+                {
+                    eprintln!("Error serving connection: {}", e);
+                }
+            });
         }
     });
 
-    while let Some(msg) = rx.recv().await {}
+    while let Some(msg) = rx.recv().await {
+        println!("{:?}", msg)
+    }
 }

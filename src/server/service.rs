@@ -14,6 +14,12 @@ pub struct ServerService {
     sender: UnboundedSender<ServerMessage>,
 }
 
+impl ServerService {
+    pub fn new(tx: UnboundedSender<ServerMessage>) -> Self {
+        Self { sender: tx }
+    }
+}
+
 impl Service<Request<body::Incoming>> for ServerService {
     type Response = Response<Full<Bytes>>;
     type Error = hyper::http::Error;
@@ -24,13 +30,13 @@ impl Service<Request<body::Incoming>> for ServerService {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ServerMessage {
     from: Option<Uuid>,
     msg: MessageType,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum MessageType {
     ConnectReq(String),
     Text(String),
