@@ -21,8 +21,8 @@ impl User {
         &self.status
     }
 
-    pub fn enter_game(&mut self, rival: Uuid) {
-        self.status = UserStatus::InGame(rival)
+    pub fn enter_game(&mut self, battle: Uuid) {
+        self.status = UserStatus::InGame(battle)
     }
 
     pub fn leave_game(&mut self) {
