@@ -1,6 +1,6 @@
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
-use td::server::service::{ServerMessage, ServerService};
+use td::server::service::{MessageType, ServerMessage, ServerService};
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 
@@ -46,6 +46,12 @@ async fn main() {
     while let Some(msg) = rx.recv().await {
         tokio::spawn(async move {
             // handle incoming message asynchronously
+            match msg.msg {
+                MessageType::Text(txt) => {}
+                MessageType::ConnectWs(ws) => {}
+                MessageType::ConnectReq(name) => {}
+                MessageType::Disconnect => {}
+            }
         });
     }
 }
