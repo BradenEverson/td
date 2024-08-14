@@ -36,8 +36,12 @@ impl ServerService {
         let message = ServerMessage::text(from, msg);
         self.sender.send(message)
     }
-    pub fn websocket(&mut self, socket: WebSocketReadStream) -> Result<(), TokioMpscError> {
-        let message = ServerMessage::new(None, MessageType::ConnectWs(socket));
+    pub fn websocket(
+        &mut self,
+        id: Uuid,
+        socket: WebSocketReadStream,
+    ) -> Result<(), TokioMpscError> {
+        let message = ServerMessage::new(id, MessageType::ConnectWs(socket));
         self.sender.send(message)
     }
 }
@@ -57,11 +61,8 @@ impl Service<Request<body::Incoming>> for ServerService {
 
             let user_id = Uuid::new_v4();
 
-            tx.send(ServerMessage::new(
-                Some(user_id),
-                MessageType::ConnectWs(writer),
-            ))
-            .expect("Failed to send websocket write stream up channel");
+            tx.send(ServerMessage::new(user_id, MessageType::ConnectWs(writer)))
+                .expect("Failed to send websocket write stream up channel");
 
             tokio::spawn(async move {
                 while let Some(Ok(msg)) = reader.next().await {
@@ -86,17 +87,17 @@ impl Service<Request<body::Incoming>> for ServerService {
 
 #[derive(Debug)]
 pub struct ServerMessage {
-    pub from: Option<Uuid>,
+    pub from: Uuid,
     pub msg: MessageType,
 }
 
 impl ServerMessage {
-    fn new(from: Option<Uuid>, msg: MessageType) -> Self {
+    fn new(from: Uuid, msg: MessageType) -> Self {
         Self { from, msg }
     }
 
     fn text(from: Uuid, msg: &str) -> Self {
-        Self::new(Some(from), MessageType::Text(msg.to_string()))
+        Self::new(from, MessageType::Text(msg.to_string()))
     }
 }
 

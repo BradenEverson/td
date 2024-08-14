@@ -1,8 +1,13 @@
+use std::sync::Arc;
+
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
 use td::server::service::{MessageType, ServerMessage, ServerService};
+use td::server::state::State;
+use td::server::user::User;
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
+use tokio::sync::RwLock;
 
 #[tokio::main]
 async fn main() {
@@ -43,12 +48,20 @@ async fn main() {
         }
     });
 
+    let state = Arc::new(RwLock::new(State::default()));
     while let Some(msg) = rx.recv().await {
+        let state_clone = state.clone();
         tokio::spawn(async move {
+            let state = state_clone.clone();
             // handle incoming message asynchronously
             match msg.msg {
                 MessageType::Text(txt) => {}
-                MessageType::ConnectWs(ws) => {}
+                MessageType::ConnectWs(ws) => {
+                    let mut user = User::default();
+                    user.set_id(msg.from);
+
+                    state.write().await.connect(user);
+                }
                 MessageType::ConnectReq(name) => {}
                 MessageType::Disconnect => {}
             }

@@ -4,18 +4,21 @@ use crate::game::entity::SpawnableEntity;
 
 #[derive(Default, Clone, PartialEq, Eq)]
 pub struct User {
-    name: String,
     id: Uuid,
+    name: Option<String>,
     status: UserStatus,
     spawn_hand: [Option<SpawnableEntity>; 5],
 }
 
 impl User {
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn name(&self) -> Option<&String> {
+        self.name.as_ref()
     }
     pub fn id(&self) -> &Uuid {
         &self.id
+    }
+    pub fn set_id(&mut self, id: Uuid) {
+        self.id = id
     }
     pub fn status(&self) -> &UserStatus {
         &self.status
