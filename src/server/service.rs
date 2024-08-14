@@ -72,4 +72,13 @@ pub enum MessageType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ServerResponse {}
+pub struct ServerResponse {
+    from: Option<String>,
+    message: ResponseType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum ResponseType {
+    Chat(String),
+    GameStart(Uuid),
+}
