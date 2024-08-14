@@ -44,6 +44,8 @@ async fn main() {
     });
 
     while let Some(msg) = rx.recv().await {
-        println!("{:?}", msg)
+        tokio::spawn(async move {
+            // handle incoming message asynchronously
+        });
     }
 }
