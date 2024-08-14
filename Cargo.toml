@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+futures = { version = "0.3.30", features = ["executor"] }
 futures-util = { version = "0.3.30", features = ["tokio-io"] }
 http-body-util = "0.1.2"
 hyper = { version = "1.4.1", features = ["full"] }
