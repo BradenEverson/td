@@ -56,7 +56,10 @@ pub struct ServerMessage {
 
 impl ServerMessage {
     fn text(from: Uuid, msg: &str) -> Self {
-        Self { from: Some(from), msg: MessageType::Text(msg.into()) }
+        Self {
+            from: Some(from),
+            msg: MessageType::Text(msg.into()),
+        }
     }
 }
 
