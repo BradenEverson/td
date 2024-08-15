@@ -22,7 +22,7 @@ pub struct ServerService {
 }
 
 pub type TokioMpscError = tokio::sync::mpsc::error::SendError<ServerMessage>;
-pub type WebSocketReadStream =
+pub type WebSocketWriteStream =
     SplitSink<WebSocketStream<hyper_util::rt::tokio::TokioIo<Upgraded>>, Message>;
 
 impl ServerService {
@@ -39,7 +39,7 @@ impl ServerService {
     pub fn websocket(
         &mut self,
         id: Uuid,
-        socket: WebSocketReadStream,
+        socket: WebSocketWriteStream,
     ) -> Result<(), TokioMpscError> {
         let message = ServerMessage::new(id, MessageType::ConnectWs(socket));
         self.sender.send(message)
@@ -55,29 +55,35 @@ impl Service<Request<body::Incoming>> for ServerService {
         let tx = self.sender.clone();
         if hyper_tungstenite::is_upgrade_request(&req) {
             // Upgrade to WebSocket
-            let (_, websocket) =
+            let (response, websocket) =
                 hyper_tungstenite::upgrade(&mut req, None).expect("Error upgrading to WebSocket");
-            let (writer, mut reader) = block_on(async { websocket.await.unwrap().split() });
-
-            let user_id = Uuid::new_v4();
-
-            tx.send(ServerMessage::new(user_id, MessageType::ConnectWs(writer)))
-                .expect("Failed to send websocket write stream up channel");
-
             tokio::spawn(async move {
-                while let Some(Ok(msg)) = reader.next().await {
-                    // TODO - Respond to websocket messages accordingly
-                    match msg {
-                        Message::Text(txt) => {
-                            tx.send(ServerMessage::text(user_id, &txt))?;
+                match websocket.await {
+                    Ok(ws) => {
+                        let (writer, mut reader) = ws.split();
+                        let user_id = Uuid::new_v4();
+
+                        tx.send(ServerMessage::new(user_id, MessageType::ConnectWs(writer)))
+                            .expect("Failed to send websocket write stream up channel");
+
+                        while let Some(Ok(msg)) = reader.next().await {
+                            // TODO - Respond to websocket messages accordingly
+                            match msg {
+                                Message::Text(txt) => {
+                                    tx.send(ServerMessage::text(user_id, &txt))?;
+                                }
+                                _ => {}
+                            }
                         }
-                        _ => {}
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to establish WebSocket Connection: {}", err)
                     }
                 }
                 Ok::<(), TokioMpscError>(())
             });
 
-            todo!();
+            Box::pin(async { Ok(response) })
         } else {
             // Traditional HTTP
             todo!();
@@ -105,7 +111,7 @@ impl ServerMessage {
 pub enum MessageType {
     ConnectReq(String),
     Text(String),
-    ConnectWs(WebSocketReadStream),
+    ConnectWs(WebSocketWriteStream),
     Disconnect,
 }
 

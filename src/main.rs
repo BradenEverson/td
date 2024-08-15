@@ -57,8 +57,10 @@ async fn main() {
             match msg.msg {
                 MessageType::Text(txt) => {}
                 MessageType::ConnectWs(ws) => {
+                    println!("User Connected with ID {}", msg.from);
                     let mut user = User::default();
                     user.set_id(msg.from);
+                    user.set_socket(ws);
 
                     state.write().await.connect(user);
                 }

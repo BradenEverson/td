@@ -2,17 +2,23 @@ use uuid::Uuid;
 
 use crate::game::entity::SpawnableEntity;
 
-#[derive(Default, Clone, PartialEq, Eq)]
+use super::service::WebSocketWriteStream;
+
+#[derive(Default)]
 pub struct User {
     id: Uuid,
     name: Option<String>,
     status: UserStatus,
     spawn_hand: [Option<SpawnableEntity>; 5],
+    socket: Option<WebSocketWriteStream>,
 }
 
 impl User {
     pub fn name(&self) -> Option<&String> {
         self.name.as_ref()
+    }
+    pub fn set_socket(&mut self, socket: WebSocketWriteStream) {
+        self.socket = Some(socket)
     }
     pub fn id(&self) -> &Uuid {
         &self.id
