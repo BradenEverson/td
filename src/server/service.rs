@@ -1,4 +1,4 @@
-use futures::{executor::block_on, stream::SplitSink};
+use futures::stream::SplitSink;
 use futures_util::{Future, StreamExt};
 use http_body_util::Full;
 use hyper::{
@@ -7,14 +7,10 @@ use hyper::{
     upgrade::Upgraded,
 };
 use hyper::{Request, Response};
-use hyper_tungstenite::HyperWebsocket;
 use serde::{Deserialize, Serialize};
-use std::{ops::Deref, pin::Pin};
+use std::pin::Pin;
 use tokio::sync::mpsc::UnboundedSender;
-use tokio_tungstenite::{
-    tungstenite::{Message, WebSocket},
-    WebSocketStream,
-};
+use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 use uuid::Uuid;
 
 pub struct ServerService {
@@ -70,6 +66,7 @@ impl Service<Request<body::Incoming>> for ServerService {
                             // TODO - Respond to websocket messages accordingly
                             match msg {
                                 Message::Text(txt) => {
+                                    println!("Message: {}", txt);
                                     tx.send(ServerMessage::text(user_id, &txt))?;
                                 }
                                 _ => {}
@@ -117,12 +114,17 @@ pub enum MessageType {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ServerResponse {
-    from: Option<String>,
     message: ResponseType,
+}
+
+impl ServerResponse {
+    pub fn new(response: ResponseType) -> Self {
+        Self { message: response }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ResponseType {
-    Chat(String),
+    Chat(String, String),
     GameStart(Uuid),
 }

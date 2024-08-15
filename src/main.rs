@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
-use td::server::service::{MessageType, ServerMessage, ServerService};
+use td::server::service::{
+    MessageType, ResponseType, ServerMessage, ServerResponse, ServerService,
+};
 use td::server::state::State;
 use td::server::user::User;
 use tokio::net::TcpListener;
@@ -55,17 +57,31 @@ async fn main() {
             let state = state_clone.clone();
             // handle incoming message asynchronously
             match msg.msg {
-                MessageType::Text(txt) => {}
+                MessageType::Text(txt) => {
+                    let name = match state.read().await.get_name(msg.from) {
+                        Some(name) => name.clone(),
+                        None => "".to_string(),
+                    };
+                    let response = ServerResponse::new(ResponseType::Chat(name.into(), txt));
+                    state
+                        .write()
+                        .await
+                        .broadcast(response)
+                        .await
+                        .expect("Failed to broadcast to all users");
+                }
                 MessageType::ConnectWs(ws) => {
                     println!("User Connected with ID {}", msg.from);
                     let mut user = User::default();
                     user.set_id(msg.from);
                     user.set_socket(ws);
 
-                    state.write().await.connect(user);
+                    state.write().await.connect(msg.from, user);
                 }
-                MessageType::ConnectReq(name) => {}
-                MessageType::Disconnect => {}
+                MessageType::ConnectReq(name) => state.write().await.set_name(msg.from, name),
+                MessageType::Disconnect => {
+                    state.write().await.disconnect(msg.from);
+                }
             }
         });
     }

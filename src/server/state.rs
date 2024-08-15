@@ -1,4 +1,7 @@
-use super::user::{User, UserStatus};
+use super::{
+    service::ServerResponse,
+    user::{User, UserStatus},
+};
 use crate::game::battle::Battle;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
@@ -11,18 +14,31 @@ pub struct State<'a> {
 }
 
 impl<'a> State<'a> {
-    pub fn connect(&mut self, user: User) -> Uuid {
-        let id = Uuid::new_v4();
+    pub fn get_name(&self, id: Uuid) -> Option<&String> {
+        self.users[&id].name()
+    }
 
+    pub fn connect(&mut self, id: Uuid, user: User) {
         self.users.insert(id, user);
-
-        id
     }
 
     pub fn disconnect(&mut self, id: Uuid) {
         if self.users.contains_key(&id) {
             self.users.remove(&id);
         }
+    }
+
+    pub fn set_name(&mut self, id: Uuid, name: String) {
+        if let Some(user) = self.users.get_mut(&id) {
+            user.set_name(name)
+        }
+    }
+
+    pub async fn broadcast(&mut self, msg: ServerResponse) -> ServerResult<()> {
+        for (_, user) in self.users.iter_mut() {
+            user.message(&msg)?.await?
+        }
+        Ok(())
     }
 
     pub fn new_random(&'a mut self) -> ServerResult<Uuid> {
@@ -77,6 +93,12 @@ pub enum ServerError {
     NotEnoughInLobbyToStartError,
     #[error("Attempted to start a battle where at least one user is not in the lobby")]
     AttemptedStartWhenNotInLobbyError,
+    #[error("Serde json Parse Error: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    #[error("No websocket attached to user")]
+    SocketDisconnectedError,
+    #[error("Tungstenite socket send error")]
+    TungstentiteError(#[from] hyper_tungstenite::tungstenite::Error),
 }
 
 pub type ServerResult<T> = std::result::Result<T, ServerError>;
