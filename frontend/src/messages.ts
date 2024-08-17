@@ -13,7 +13,11 @@ interface GameStart {
   GameStart: Uuid;
 }
 
-export type ServerResponseType = GameStart | Chat;
+interface UserJoin {
+  UserJoin: string;
+}
+
+export type ServerResponseType = GameStart | Chat | UserJoin;
 
 export interface ServerResponse {
   message: ServerResponseType;

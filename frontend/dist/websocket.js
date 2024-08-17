@@ -5,6 +5,10 @@ function handleServerResponse(response) {
         let message = response.message.Chat[0] + ": " + response.message.Chat[1];
         displayMessage(message);
     }
+    else if ("UserJoin" in response.message) {
+        let message = response.message.UserJoin + " has joined the server";
+        displayMessage(message);
+    }
     else {
         console.log(response.message);
     }

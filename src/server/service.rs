@@ -104,6 +104,11 @@ impl Service<Request<body::Incoming>> for ServerService {
 
                             "frontend/dist/websocket.js"
                         }
+                        "/style/styles.css" => {
+                            response = response.header("Content-Type", "text/css");
+
+                            "frontend/style/styles.css"
+                        }
                         _ => "frontend/404.html",
                     };
 
@@ -167,6 +172,7 @@ impl ServerResponse {
 pub enum ResponseType {
     Chat(String, String),
     GameStart(Uuid),
+    UserJoin(String),
 }
 
 /// Type for interfacing with TypeScript WebSocket

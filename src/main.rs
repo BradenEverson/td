@@ -80,7 +80,18 @@ async fn main() {
 
                     state.write().await.connect(msg.from, user);
                 }
-                MessageType::ConnectReq(name) => state.write().await.set_name(msg.from, name),
+                MessageType::ConnectReq(name) => {
+                    let response = ServerResponse::new(ResponseType::UserJoin(name.clone()));
+                    {
+                        let mut state = state.write().await;
+                        state
+                            .broadcast(response)
+                            .await
+                            .expect("Failed to broadcast to all users");
+
+                        state.set_name(msg.from, name)
+                    }
+                }
                 MessageType::Disconnect => {
                     state.write().await.disconnect(msg.from);
                 }
