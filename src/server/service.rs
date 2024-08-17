@@ -5,10 +5,11 @@ use hyper::{
     body::{self, Bytes},
     service::Service,
     upgrade::Upgraded,
+    Method, StatusCode,
 };
 use hyper::{Request, Response};
 use serde::{Deserialize, Serialize};
-use std::pin::Pin;
+use std::{fs::File, io::Read, pin::Pin};
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 use uuid::Uuid;
@@ -66,8 +67,17 @@ impl Service<Request<body::Incoming>> for ServerService {
                             // TODO - Respond to websocket messages accordingly
                             match msg {
                                 Message::Text(txt) => {
-                                    println!("Message: {}", txt);
-                                    tx.send(ServerMessage::text(user_id, &txt))?;
+                                    let parsed: ClientMessage = serde_json::from_str(&txt).unwrap();
+                                    match parsed.r#type.as_str() {
+                                        "Text" => {
+                                            tx.send(ServerMessage::text(user_id, &parsed.data))?
+                                        }
+                                        "ConnectReq" => tx.send(ServerMessage::new(
+                                            user_id,
+                                            MessageType::ConnectReq(parsed.data),
+                                        ))?,
+                                        _ => {}
+                                    }
                                 }
                                 _ => {}
                             }
@@ -82,8 +92,38 @@ impl Service<Request<body::Incoming>> for ServerService {
 
             Box::pin(async { Ok(response) })
         } else {
-            // Traditional HTTP
-            todo!();
+            // HTTP
+            let mut response = Response::builder().status(StatusCode::OK);
+
+            let res = match req.method() {
+                &Method::GET => {
+                    let path = match req.uri().path() {
+                        "/" => "frontend/index.html",
+                        "/dist/websocket.js" => {
+                            response = response.header("Content-Type", "application/javascript");
+
+                            "frontend/dist/websocket.js"
+                        }
+                        _ => "frontend/404.html",
+                    };
+
+                    let page = File::open(path);
+                    match page {
+                        Ok(mut page) => {
+                            let mut buf = vec![];
+                            page.read_to_end(&mut buf).expect("Failed to read file");
+
+                            response.body(Full::new(Bytes::copy_from_slice(&buf)))
+                        }
+                        Err(e) => {
+                            panic!("{}{}", e, path);
+                        }
+                    }
+                }
+                _ => response.body(Full::new(Bytes::copy_from_slice(&[]))),
+            };
+
+            Box::pin(async { res })
         }
     }
 }
@@ -127,4 +167,11 @@ impl ServerResponse {
 pub enum ResponseType {
     Chat(String, String),
     GameStart(Uuid),
+}
+
+/// Type for interfacing with TypeScript WebSocket
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ClientMessage {
+    pub r#type: String,
+    pub data: String,
 }

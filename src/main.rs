@@ -56,6 +56,7 @@ async fn main() {
         tokio::spawn(async move {
             let state = state_clone.clone();
             // handle incoming message asynchronously
+            println!("{:?}", msg);
             match msg.msg {
                 MessageType::Text(txt) => {
                     let name = match state.read().await.get_name(msg.from) {
