@@ -1,14 +1,21 @@
 export const socket = new WebSocket("/");
 function handleServerResponse(response) {
-    switch (response.message.type) {
-        case "Chat":
-            console.log(`Chat message from ${response.message.user}: ${response.message.message}`);
-            break;
-        case "GameStart":
-            console.log(`Game started with ID: ${response.message.gameId}`);
-            break;
-        default:
-            console.error("Unknown message type:", response.message);
+    if ("Chat" in response.message) {
+        console.log("Chat message");
+        let message = response.message.Chat[0] + ": " + response.message.Chat[1];
+        displayMessage(message);
+    }
+    else {
+        console.log(response.message);
+    }
+}
+function displayMessage(text) {
+    const messagesDiv = document.getElementById("messages");
+    if (messagesDiv) {
+        const messageElement = document.createElement("div");
+        messageElement.textContent = text;
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 }
 socket.addEventListener("open", () => {

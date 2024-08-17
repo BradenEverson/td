@@ -13,7 +13,8 @@ use tokio::sync::RwLock;
 
 #[tokio::main]
 async fn main() {
-    let listener = TcpListener::bind("0.0.0.0:0")
+    // TODO: Change port back to 0, fixed for debugging
+    let listener = TcpListener::bind("0.0.0.0:7878")
         .await
         .expect("Error starting up the server");
 

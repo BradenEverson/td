@@ -3,13 +3,20 @@ import { MessageType, ServerResponse, ServerResponseType } from "./messages";
 export const socket = new WebSocket("/");
 
 function handleServerResponse(response: ServerResponse) {
-  console.log(response)
+  if ("Chat" in response.message) {
+    console.log("Chat message");
+    let message: string =
+      response.message.Chat[0] + ": " + response.message.Chat[1];
+    displayMessage(message);
+  } else {
+    console.log(response.message);
+  }
 }
 
 function displayMessage(text: string) {
-  const messagesDiv = document.getElementById('messages');
+  const messagesDiv = document.getElementById("messages");
   if (messagesDiv) {
-    const messageElement = document.createElement('div');
+    const messageElement = document.createElement("div");
     messageElement.textContent = text;
     messagesDiv.appendChild(messageElement);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;

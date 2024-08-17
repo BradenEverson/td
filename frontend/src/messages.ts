@@ -5,9 +5,15 @@ export type MessageType =
   | { type: "Text"; data: string }
   | { type: "Disconnect" };
 
-export type ServerResponseType =
-  | { type: "Chat"; user: string; message: string }
-  | { type: "GameStart"; gameId: Uuid };
+interface Chat {
+  Chat: [string, string];
+}
+
+interface GameStart {
+  GameStart: Uuid;
+}
+
+export type ServerResponseType = GameStart | Chat;
 
 export interface ServerResponse {
   message: ServerResponseType;
