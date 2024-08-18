@@ -17,7 +17,11 @@ interface UserJoin {
   UserJoin: string;
 }
 
-export type ServerResponseType = GameStart | Chat | UserJoin;
+interface UserLeave {
+  UserLeave: string;
+}
+
+export type ServerResponseType = GameStart | Chat | UserJoin | UserLeave;
 
 export interface ServerResponse {
   message: ServerResponseType;

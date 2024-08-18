@@ -10,7 +10,10 @@ function handleServerResponse(response: ServerResponse) {
     displayMessage(message);
   } else if ("UserJoin" in response.message) {
     let message: string = response.message.UserJoin + " has joined the server";
-    displayMessage(message);
+    displayColoredMessage(message, "#80a4bf");
+  } else if ("UserLeave" in response.message) {
+    let message: string = response.message.UserLeave + " has disconnected :(";
+    displayColoredMessage(message, "#f07269");
   } else {
     console.log(response.message);
   }
@@ -21,6 +24,17 @@ function displayMessage(text: string) {
   if (messagesDiv) {
     const messageElement = document.createElement("div");
     messageElement.textContent = text;
+    messagesDiv.appendChild(messageElement);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+}
+
+function displayColoredMessage(text: string, color: string) {
+  const messagesDiv = document.getElementById("messages");
+  if (messagesDiv) {
+    const messageElement = document.createElement("div");
+    messageElement.textContent = text;
+    messageElement.style.color = color;
     messagesDiv.appendChild(messageElement);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }

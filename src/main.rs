@@ -98,7 +98,7 @@ async fn main() {
                     if let Some(name) = name {
                         let response = ServerResponse::new(ResponseType::UserLeave(name.clone()));
                         state
-                            .broadcast(response)
+                            .broadcast_to_all_but(response, &[msg.from])
                             .await
                             .expect("Error broadcasting to all users");
                     }

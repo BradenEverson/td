@@ -35,7 +35,19 @@ impl<'a> State<'a> {
     }
 
     pub async fn broadcast(&mut self, msg: ServerResponse) -> ServerResult<()> {
-        for (_, user) in self.users.iter_mut() {
+        self.broadcast_to_all_but(msg, &[]).await
+    }
+
+    pub async fn broadcast_to_all_but(
+        &mut self,
+        msg: ServerResponse,
+        exclude: &[Uuid],
+    ) -> ServerResult<()> {
+        for (_, user) in self
+            .users
+            .iter_mut()
+            .filter(|(id, _)| !exclude.contains(id))
+        {
             user.message(&msg)?.await?
         }
         Ok(())
