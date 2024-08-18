@@ -177,6 +177,7 @@ pub enum ResponseType {
     Chat(String, String),
     GameStart(Uuid),
     UserJoin(String),
+    UserLeave(String),
 }
 
 /// Type for interfacing with TypeScript WebSocket

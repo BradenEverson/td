@@ -93,7 +93,16 @@ async fn main() {
                     }
                 }
                 MessageType::Disconnect => {
-                    state.write().await.disconnect(msg.from);
+                    let mut state = state.write().await;
+                    let name = state.get_name(msg.from);
+                    if let Some(name) = name {
+                        let response = ServerResponse::new(ResponseType::UserLeave(name.clone()));
+                        state
+                            .broadcast(response)
+                            .await
+                            .expect("Error broadcasting to all users");
+                    }
+                    state.disconnect(msg.from);
                 }
             }
         });
