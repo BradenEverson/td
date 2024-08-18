@@ -79,6 +79,10 @@ impl Service<Request<body::Incoming>> for ServerService {
                                         _ => {}
                                     }
                                 }
+                                Message::Close(_) => {
+                                    println!("Disconnect");
+                                    tx.send(ServerMessage::new(user_id, MessageType::Disconnect))?;
+                                }
                                 _ => {}
                             }
                         }
