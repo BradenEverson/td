@@ -158,6 +158,7 @@ pub enum MessageType {
     ConnectReq(String),
     Text(String),
     ConnectWs(WebSocketWriteStream),
+    BeginGame,
     Disconnect,
 }
 

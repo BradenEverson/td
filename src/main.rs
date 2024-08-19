@@ -104,6 +104,9 @@ async fn main() {
                     }
                     state.disconnect(msg.from);
                 }
+                MessageType::BeginGame => {
+                    todo!("Pair another Uuid with this Uuid and send the signal to begin a game")
+                }
             }
         });
     }
