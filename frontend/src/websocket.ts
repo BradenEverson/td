@@ -76,6 +76,14 @@ export function join(username: string) {
   sendMessage(joinRequest);
 }
 
+export function startBattle() {
+  let beginGame: MessageType = {
+    type: "BeginGame"
+  };
+
+  sendMessage(beginGame);
+}
+
 function sendMessage(msg: MessageType) {
   let messageString: string = JSON.stringify(msg);
   socket.send(messageString);

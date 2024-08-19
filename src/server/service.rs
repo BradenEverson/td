@@ -76,6 +76,12 @@ impl Service<Request<body::Incoming>> for ServerService {
                                             user_id,
                                             MessageType::ConnectReq(parsed.data),
                                         ))?,
+                                        "BeginGame" => {
+                                            tx.send(ServerMessage::new(
+                                                user_id,
+                                                MessageType::BeginGame,
+                                            ))?;
+                                        }
                                         _ => {}
                                     }
                                 }
@@ -179,6 +185,7 @@ pub enum ResponseType {
     GameStart(Uuid),
     UserJoin(String),
     UserLeave(String),
+    StartGame(String),
 }
 
 /// Type for interfacing with TypeScript WebSocket

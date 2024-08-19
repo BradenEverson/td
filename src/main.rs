@@ -105,7 +105,32 @@ async fn main() {
                     state.disconnect(msg.from);
                 }
                 MessageType::BeginGame => {
-                    todo!("Pair another Uuid with this Uuid and send the signal to begin a game")
+                    let mut state = state.write().await;
+                    let against = state.new_random(msg.from);
+
+                    match against {
+                        Ok(against) => {
+                            let name_a = state.get_name(msg.from).unwrap();
+                            let name_b = state.get_name(against).unwrap();
+
+                            let message_a =
+                                ServerResponse::new(ResponseType::StartGame(name_a.clone()));
+                            let message_b =
+                                ServerResponse::new(ResponseType::StartGame(name_b.clone()));
+
+                            state
+                                .broadcast_to(message_a, &[against])
+                                .await
+                                .expect("Failed to broadcast message");
+                            state
+                                .broadcast_to(message_b, &[msg.from])
+                                .await
+                                .expect("Failed to broadcast message");
+                        }
+                        Err(error) => {
+                            panic!("Starting game failed: {}\n\nPotential TODO: map error and if its a lobby full error broadcast that to the user", error);
+                        }
+                    }
                 }
             }
         });

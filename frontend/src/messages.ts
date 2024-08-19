@@ -3,7 +3,8 @@ export type Uuid = string;
 export type MessageType =
   | { type: "ConnectReq"; data: string }
   | { type: "Text"; data: string }
-  | { type: "Disconnect" };
+  | { type: "Disconnect" }
+  | { type: "BeginGame" };
 
 interface Chat {
   Chat: [string, string];

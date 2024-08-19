@@ -3,17 +3,17 @@ use super::{
     user::{User, UserStatus},
 };
 use crate::game::battle::Battle;
-use rand::seq::SliceRandom;
+use rand::Rng;
 use std::collections::HashMap;
 use uuid::Uuid;
 
 #[derive(Default)]
-pub struct State<'a> {
+pub struct State {
     users: HashMap<Uuid, User>,
-    battles: HashMap<Uuid, Battle<'a>>,
+    battles: HashMap<Uuid, Battle>,
 }
 
-impl<'a> State<'a> {
+impl State {
     pub fn get_name(&self, id: Uuid) -> Option<&String> {
         self.users[&id].name()
     }
@@ -53,31 +53,36 @@ impl<'a> State<'a> {
         Ok(())
     }
 
-    pub fn new_random(&'a mut self) -> ServerResult<Uuid> {
-        let mut rng = rand::thread_rng();
-        let mut users = self.available_users();
+    pub async fn broadcast_to(&mut self, msg: ServerResponse, to: &[Uuid]) -> ServerResult<()> {
+        for (_, user) in self.users.iter_mut().filter(|(id, _)| to.contains(id)) {
+            user.message(&msg)?.await?
+        }
+        Ok(())
+    }
 
-        if users.len() < 2 {
+    pub fn new_random(&mut self, id: Uuid) -> ServerResult<Uuid> {
+        let mut rng = rand::thread_rng();
+        let users = self.available_users();
+
+        if users.len() < 1 {
             return Err(ServerError::NotEnoughInLobbyToStartError);
         }
 
-        users.shuffle(&mut rng);
-        let user_a = users.pop().unwrap();
-        let user_b = users.pop().unwrap();
+        let oponent = users[rng.gen_range(0..users.len())];
 
-        self.new_battle(user_a, user_b)
+        self.new_battle(id, oponent)
     }
 
-    pub fn new_battle(&'a mut self, user_a: Uuid, user_b: Uuid) -> ServerResult<Uuid> {
-        let mut user_a = &self.users[&user_a];
-        let mut user_b = &self.users[&user_b];
+    pub fn new_battle(&mut self, user_a_id: Uuid, user_b_id: Uuid) -> ServerResult<Uuid> {
+        let user_a = &self.users[&user_a_id];
+        let user_b = &self.users[&user_b_id];
 
         if user_a.status() != &UserStatus::Lobby || user_b.status() != &UserStatus::Lobby {
             return Err(ServerError::AttemptedStartWhenNotInLobbyError);
         }
 
         let battle_id = Uuid::new_v4();
-        let new_battle = Battle::start_battle(&mut user_a, &mut user_b);
+        let new_battle = Battle::start_battle(user_a_id, user_b_id);
 
         self.battles.insert(battle_id, new_battle);
 

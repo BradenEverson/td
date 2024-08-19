@@ -23,6 +23,8 @@
             <input type="text" id="chat-input" placeholder="Type a message..." />
             <button id="send-btn">Send</button>
         </div>
+        <button id="start-btn">Start Battle >:)</button>
+    </div>
     </div>
     <script src="dist/websocket.js" type="module"></script>
     <script>
@@ -31,9 +33,14 @@
         const joinBtn = document.getElementById("join-btn");
         const chatInput = document.getElementById("chat-input");
         const sendBtn = document.getElementById("send-btn");
+        const startBtn = document.getElementById("start-btn");
         const messagesDiv = document.getElementById("messages");
 
         let username = "";
+
+        startBtn.addEventListener("click", () => {
+            startBattle();
+        });
 
         joinBtn.addEventListener("click", () => {
             username = usernameInput.value.trim();

@@ -1,12 +1,12 @@
-use crate::server::user::User;
+use uuid::Uuid;
 
-pub struct Battle<'a> {
-    pub team_a: Team<'a>,
-    pub team_b: Team<'a>,
+pub struct Battle {
+    pub team_a: Team,
+    pub team_b: Team,
 }
 
-impl<'a> Battle<'a> {
-    pub fn start_battle(user_a: &'a User, user_b: &'a User) -> Self {
+impl Battle {
+    pub fn start_battle(user_a: Uuid, user_b: Uuid) -> Self {
         Self {
             team_a: Team::new_team(user_a),
             team_b: Team::new_team(user_b),
@@ -14,13 +14,13 @@ impl<'a> Battle<'a> {
     }
 }
 
-pub struct Team<'a> {
-    pub player: &'a User,
+pub struct Team {
+    pub player: Uuid,
     pub tower: Tower,
 }
 
-impl<'a> Team<'a> {
-    pub fn new_team(user: &'a User) -> Self {
+impl Team {
+    pub fn new_team(user: Uuid) -> Self {
         Self {
             player: user,
             tower: Tower::default(),
