@@ -69,12 +69,13 @@ impl Service<Request<body::Incoming>> for ServerService {
                                 Message::Text(txt) => {
                                     let parsed: ClientMessage = serde_json::from_str(&txt).unwrap();
                                     match parsed.r#type.as_str() {
-                                        "Text" => {
-                                            tx.send(ServerMessage::text(user_id, &parsed.data))?
-                                        }
+                                        "Text" => tx.send(ServerMessage::text(
+                                            user_id,
+                                            &parsed.data.unwrap(),
+                                        ))?,
                                         "ConnectReq" => tx.send(ServerMessage::new(
                                             user_id,
-                                            MessageType::ConnectReq(parsed.data),
+                                            MessageType::ConnectReq(parsed.data.unwrap()),
                                         ))?,
                                         "BeginGame" => {
                                             tx.send(ServerMessage::new(
@@ -192,5 +193,5 @@ pub enum ResponseType {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClientMessage {
     pub r#type: String,
-    pub data: String,
+    pub data: Option<String>,
 }

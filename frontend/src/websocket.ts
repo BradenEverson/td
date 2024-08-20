@@ -91,3 +91,4 @@ function sendMessage(msg: MessageType) {
 
 (window as any).chat = chat;
 (window as any).join = join;
+(window as any).startBattle = startBattle;

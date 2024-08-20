@@ -76,3 +76,4 @@ function sendMessage(msg) {
 }
 window.chat = chat;
 window.join = join;
+window.startBattle = startBattle;

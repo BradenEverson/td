@@ -38,9 +38,6 @@
 
         let username = "";
 
-        startBtn.addEventListener("click", () => {
-            startBattle();
-        });
 
         joinBtn.addEventListener("click", () => {
             username = usernameInput.value.trim();
@@ -58,6 +55,10 @@
                 chat(message);
                 chatInput.value = "";
             }
+        });
+
+        startBtn.addEventListener("click", () => {
+            startBattle();
         });
 
         function displayMessage(text) {
