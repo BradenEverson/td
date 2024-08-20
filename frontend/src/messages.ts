@@ -22,7 +22,16 @@ interface UserLeave {
   UserLeave: string;
 }
 
-export type ServerResponseType = GameStart | Chat | UserJoin | UserLeave;
+interface StartGame {
+  StartGame: Uuid;
+}
+
+export type ServerResponseType =
+  | GameStart
+  | Chat
+  | UserJoin
+  | UserLeave
+  | StartGame;
 
 export interface ServerResponse {
   message: ServerResponseType;

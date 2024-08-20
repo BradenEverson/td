@@ -60,9 +60,9 @@ impl State {
         Ok(())
     }
 
-    pub fn new_random(&mut self, id: Uuid) -> ServerResult<Uuid> {
+    pub fn new_random(&mut self, id: Uuid) -> ServerResult<(Uuid, Uuid)> {
         let mut rng = rand::thread_rng();
-        let users = self.available_users();
+        let users: Vec<Uuid> = self.available_users(id);
 
         if users.len() < 1 {
             return Err(ServerError::NotEnoughInLobbyToStartError);
@@ -73,7 +73,7 @@ impl State {
         self.new_battle(id, oponent)
     }
 
-    pub fn new_battle(&mut self, user_a_id: Uuid, user_b_id: Uuid) -> ServerResult<Uuid> {
+    pub fn new_battle(&mut self, user_a_id: Uuid, user_b_id: Uuid) -> ServerResult<(Uuid, Uuid)> {
         let user_a = &self.users[&user_a_id];
         let user_b = &self.users[&user_b_id];
 
@@ -86,13 +86,13 @@ impl State {
 
         self.battles.insert(battle_id, new_battle);
 
-        Ok(battle_id)
+        Ok((battle_id, user_b_id))
     }
 
-    pub fn available_users(&self) -> Vec<Uuid> {
+    pub fn available_users(&self, exclude: Uuid) -> Vec<Uuid> {
         self.users
             .iter()
-            .filter(|(_, user)| user.status() == &UserStatus::Lobby)
+            .filter(|(id, user)| user.status() == &UserStatus::Lobby && *id != &exclude)
             .map(|(id, _)| *id)
             .collect()
     }

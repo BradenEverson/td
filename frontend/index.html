@@ -1,72 +1,71 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Little Rusty Chat Test</title>
-    <link rel="stylesheet" href="style/styles.css">
-</head>
+    <link rel="stylesheet" href="style/styles.css" />
+  </head>
 
-<body>
+  <body>
     <div id="username-popup">
-        <div>
-            <h2>Enter Your Username</h2>
-            <input type="text" id="username-input" placeholder="Username" />
-            <button id="join-btn">Join</button>
-        </div>
+      <div>
+        <h2>Enter Your Username</h2>
+        <input type="text" id="username-input" placeholder="Username" />
+        <button id="join-btn">Join</button>
+      </div>
     </div>
 
     <div id="chat-container">
-        <div id="messages"></div>
-        <div id="chatbar">
-            <input type="text" id="chat-input" placeholder="Type a message..." />
-            <button id="send-btn">Send</button>
-        </div>
-        <button id="start-btn">Start Battle >:)</button>
+      <div id="messages"></div>
+      <div id="chatbar">
+        <input type="text" id="chat-input" placeholder="Type a message..." />
+        <button id="send-btn">Send</button>
+      </div>
+      <button id="start-btn">Start Battle >:)</button>
     </div>
-    </div>
+
     <script src="dist/websocket.js" type="module"></script>
     <script>
-        const usernamePopup = document.getElementById("username-popup");
-        const usernameInput = document.getElementById("username-input");
-        const joinBtn = document.getElementById("join-btn");
-        const chatInput = document.getElementById("chat-input");
-        const sendBtn = document.getElementById("send-btn");
-        const startBtn = document.getElementById("start-btn");
-        const messagesDiv = document.getElementById("messages");
+      const usernamePopup = document.getElementById("username-popup");
+      const usernameInput = document.getElementById("username-input");
+      const joinBtn = document.getElementById("join-btn");
+      const chatInput = document.getElementById("chat-input");
+      const sendBtn = document.getElementById("send-btn");
+      const startBtn = document.getElementById("start-btn");
+      const messagesDiv = document.getElementById("messages");
 
-        let username = "";
+      let username = "";
 
-
-        joinBtn.addEventListener("click", () => {
-            username = usernameInput.value.trim();
-            if (username) {
-                join(username);
-                usernamePopup.style.display = "none";
-            } else {
-                alert("Please enter a valid username.");
-            }
-        });
-
-        sendBtn.addEventListener("click", () => {
-            const message = chatInput.value.trim();
-            if (message) {
-                chat(message);
-                chatInput.value = "";
-            }
-        });
-
-        startBtn.addEventListener("click", () => {
-            startBattle();
-        });
-
-        function displayMessage(text) {
-            const messageElement = document.createElement("div");
-            messageElement.textContent = text;
-
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      joinBtn.addEventListener("click", () => {
+        username = usernameInput.value.trim();
+        if (username) {
+          join(username);
+          usernamePopup.style.display = "none";
+        } else {
+          alert("Please enter a valid username.");
         }
+      });
+
+      sendBtn.addEventListener("click", () => {
+        const message = chatInput.value.trim();
+        if (message) {
+          chat(message);
+          chatInput.value = "";
+        }
+      });
+
+      startBtn.addEventListener("click", () => {
+        startBattle();
+      });
+
+      function displayMessage(text) {
+        const messageElement = document.createElement("div");
+        messageElement.textContent = text;
+
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
     </script>
-</body>
+  </body>
+</html>

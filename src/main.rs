@@ -106,10 +106,10 @@ async fn main() {
                 }
                 MessageType::BeginGame => {
                     let mut state = state.write().await;
-                    let against = state.new_random(msg.from);
+                    let result = state.new_random(msg.from);
 
-                    match against {
-                        Ok(against) => {
+                    match result {
+                        Ok((_battle_id, against)) => {
                             let name_a = state.get_name(msg.from).unwrap();
                             let name_b = state.get_name(against).unwrap();
 

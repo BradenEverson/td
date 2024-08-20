@@ -13,6 +13,9 @@ function handleServerResponse(response) {
         let message = response.message.UserLeave + " has disconnected :(";
         displayColoredMessage(message, "#f07269");
     }
+    else if ("StartGame" in response.message) {
+        alert("Starting a fight with " + response.message.StartGame);
+    }
     else {
         console.log(response.message);
     }
@@ -66,7 +69,7 @@ export function join(username) {
 }
 export function startBattle() {
     let beginGame = {
-        type: "BeginGame"
+        type: "BeginGame",
     };
     sendMessage(beginGame);
 }
