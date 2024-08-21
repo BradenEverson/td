@@ -23,7 +23,7 @@ interface UserLeave {
 }
 
 interface StartGame {
-  StartGame: Uuid;
+  StartGame: [Uuid, Uuid];
 }
 
 export type ServerResponseType =

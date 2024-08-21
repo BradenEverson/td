@@ -110,13 +110,15 @@ async fn main() {
 
                     match result {
                         Ok((_battle_id, against)) => {
-                            let name_a = state.get_name(msg.from).unwrap();
-                            let name_b = state.get_name(against).unwrap();
+                            let name_a = state.get_name(msg.from).unwrap().clone();
+                            let name_b = state.get_name(against).unwrap().clone();
 
-                            let message_a =
-                                ServerResponse::new(ResponseType::StartGame(name_a.clone()));
+                            let message_a = ServerResponse::new(ResponseType::StartGame(
+                                name_a.clone(),
+                                name_b.clone(),
+                            ));
                             let message_b =
-                                ServerResponse::new(ResponseType::StartGame(name_b.clone()));
+                                ServerResponse::new(ResponseType::StartGame(name_b, name_a));
 
                             state
                                 .broadcast_to(message_a, &[against])

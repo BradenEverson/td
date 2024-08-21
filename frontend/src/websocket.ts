@@ -15,10 +15,54 @@ function handleServerResponse(response: ServerResponse) {
     let message: string = response.message.UserLeave + " has disconnected :(";
     displayColoredMessage(message, "#f07269");
   } else if ("StartGame" in response.message) {
-    alert("Starting a fight with " + response.message.StartGame);
+    const userName = response.message.StartGame[0]; // Assuming this is the opponent's name
+    const opponentName = response.message.StartGame[1]; // Assuming this is the opponent's name
+    switchToGameView(userName, opponentName);
   } else {
     console.log(response.message);
   }
+}
+
+function switchToGameView(username: string, opponentName: string) {
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) {
+    chatContainer.style.display = "none";
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.id = "game-canvas";
+
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.position = "absolute";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.font = `${canvas.width * 0.05}px Arial`;
+    ctx.textAlign = "center";
+
+    // Draw user and opponent names
+    ctx.fillText(username, canvas.width / 4, canvas.height / 2);
+    ctx.fillText(opponentName, (3 * canvas.width) / 4, canvas.height / 2);
+  }
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+      ctx.font = `${canvas.width * 0.05}px Arial`; // Adjust font size again
+      ctx.fillText(username, canvas.width / 4, canvas.height / 2);
+      ctx.fillText(opponentName, (3 * canvas.width) / 4, canvas.height / 2);
+    }
+  });
 }
 
 function displayMessage(text: string) {
