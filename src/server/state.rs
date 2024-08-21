@@ -74,17 +74,30 @@ impl State {
     }
 
     pub fn new_battle(&mut self, user_a_id: Uuid, user_b_id: Uuid) -> ServerResult<(Uuid, Uuid)> {
-        let user_a = &self.users[&user_a_id];
-        let user_b = &self.users[&user_b_id];
+        {
+            let user_a = &self.users[&user_a_id];
+            let user_b = &self.users[&user_b_id];
 
-        if user_a.status() != &UserStatus::Lobby || user_b.status() != &UserStatus::Lobby {
-            return Err(ServerError::AttemptedStartWhenNotInLobbyError);
+            if user_a.status() != &UserStatus::Lobby || user_b.status() != &UserStatus::Lobby {
+                return Err(ServerError::AttemptedStartWhenNotInLobbyError);
+            }
         }
 
         let battle_id = Uuid::new_v4();
         let new_battle = Battle::start_battle(user_a_id, user_b_id);
 
         self.battles.insert(battle_id, new_battle);
+
+        {
+            self.users
+                .get_mut(&user_a_id)
+                .unwrap()
+                .enter_game(battle_id);
+            self.users
+                .get_mut(&user_b_id)
+                .unwrap()
+                .enter_game(battle_id);
+        }
 
         Ok((battle_id, user_b_id))
     }
