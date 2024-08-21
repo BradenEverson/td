@@ -2,7 +2,7 @@ use futures::{sink::Send, SinkExt};
 use tokio_tungstenite::tungstenite::Message;
 use uuid::Uuid;
 
-use crate::game::entity::SpawnableEntity;
+use crate::game::entity::Unit;
 
 use super::{
     service::{ServerResponse, WebSocketWriteStream},
@@ -14,7 +14,7 @@ pub struct User {
     id: Uuid,
     name: Option<String>,
     status: UserStatus,
-    spawn_hand: [Option<SpawnableEntity>; 5],
+    spawn_hand: [Option<Unit>; 5],
     socket: Option<WebSocketWriteStream>,
 }
 
