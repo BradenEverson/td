@@ -46,6 +46,14 @@ impl<'a> User<'a> {
         self.id = id
     }
 
+    pub fn get_card(&self, card: usize) -> Option<Unit<'a>> {
+        if let Some(hand) = self.spawn_hand {
+            Some(hand[card].clone())
+        } else {
+            None
+        }
+    }
+
     pub fn get_hand(&self) -> Option<[Unit<'a>; GAME_HAND_SIZE]> {
         self.spawn_hand
     }

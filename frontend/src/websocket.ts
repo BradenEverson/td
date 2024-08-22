@@ -119,6 +119,7 @@ function handleServerResponse(response: ServerResponse) {
             remainingCooldown === 0 &&
             userMoney >= unit.cost
           ) {
+            sendUnit(unit.name);
             console.log(`Spawning unit: ${unit.name}`);
 
             userMoney -= unit.cost;
@@ -267,6 +268,15 @@ export function join(username: string) {
   };
 
   sendMessage(joinRequest);
+}
+
+export function sendUnit(unitId: string) {
+  let sendUnit: MessageType = {
+    type: "SpawnUnit",
+    data: unitId
+  };
+
+  sendMessage(sendUnit);
 }
 
 export function startBattle() {

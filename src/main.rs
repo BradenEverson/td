@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
+use td::game::card_gen::UNITS;
 use td::server::service::{
     MessageType, ResponseType, ServerMessage, ServerResponse, ServerService,
 };
-use td::server::state::{State, GAME_HAND_SIZE};
+use td::server::state::State;
 use td::server::user::User;
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
@@ -143,10 +144,32 @@ async fn main() {
                         }
                     }
                 }
-                MessageType::PlayUnit(loc_in_hand) => {
-                    if loc_in_hand < GAME_HAND_SIZE {
-                        todo!("Grab unit from users hand and send back a UnitPlayed response")
-                    }
+                MessageType::PlayUnit(card_name) => {
+                    let unit = *UNITS()
+                        .iter()
+                        .find(|unit| unit.get_name() == card_name)
+                        .expect("Unit doesn't exist :/");
+
+                    let response_back =
+                        ServerResponse::new(ResponseType::UnitSpawned(true, Box::new(unit)));
+                    let response_to_opponent =
+                        ServerResponse::new(ResponseType::UnitSpawned(false, Box::new(unit)));
+                    let opponent = state
+                        .read()
+                        .await
+                        .get_opponent(msg.from)
+                        .expect("Couldn't find opponent");
+
+                    let mut state = state.write().await;
+                    state
+                        .broadcast_to(response_back, &[msg.from])
+                        .await
+                        .expect("Failed to broadcast message");
+
+                    state
+                        .broadcast_to(response_to_opponent, &[opponent])
+                        .await
+                        .expect("Failed to broadcast message");
                 }
             }
         });

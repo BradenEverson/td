@@ -94,6 +94,7 @@ function handleServerResponse(response) {
                         clickY < y + buttonHeight &&
                         remainingCooldown === 0 &&
                         userMoney >= unit.cost) {
+                        sendUnit(unit.name);
                         console.log(`Spawning unit: ${unit.name}`);
                         userMoney -= unit.cost;
                         cooldownStartTimes[index] = Date.now();
@@ -211,6 +212,13 @@ export function join(username) {
         data: username,
     };
     sendMessage(joinRequest);
+}
+export function sendUnit(unitId) {
+    let sendUnit = {
+        type: "SpawnUnit",
+        data: unitId
+    };
+    sendMessage(sendUnit);
 }
 export function startBattle() {
     let beginGame = {

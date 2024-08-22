@@ -1,39 +1,24 @@
 use uuid::Uuid;
 
+#[derive(Clone, Copy, Default, Debug, PartialEq, Eq)]
 pub struct Battle {
-    pub team_a: Team,
-    pub team_b: Team,
+    pub team_a: Uuid,
+    pub team_b: Uuid,
 }
 
 impl Battle {
     pub fn start_battle(user_a: Uuid, user_b: Uuid) -> Self {
         Self {
-            team_a: Team::new_team(user_a),
-            team_b: Team::new_team(user_b),
+            team_a: user_a,
+            team_b: user_b,
         }
     }
-}
 
-pub struct Team {
-    pub player: Uuid,
-    pub tower: Tower,
-}
-
-impl Team {
-    pub fn new_team(user: Uuid) -> Self {
-        Self {
-            player: user,
-            tower: Tower::default(),
+    pub fn get_enemy(&self, id: Uuid) -> Uuid {
+        if self.team_a == id {
+            self.team_b
+        } else {
+            self.team_a
         }
-    }
-}
-
-pub struct Tower {
-    pub health: usize,
-}
-
-impl Default for Tower {
-    fn default() -> Self {
-        Self { health: 1500 }
     }
 }

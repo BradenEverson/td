@@ -4,7 +4,8 @@ export type MessageType =
   | { type: "ConnectReq"; data: string }
   | { type: "Text"; data: string }
   | { type: "Disconnect" }
-  | { type: "BeginGame" };
+  | { type: "BeginGame" }
+  | { type: "SpawnUnit"; data: string };
 
 interface Chat {
   Chat: [string, string];

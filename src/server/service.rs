@@ -87,6 +87,10 @@ impl Service<Request<body::Incoming>> for ServerService {
                                                 MessageType::BeginGame,
                                             ))?;
                                         }
+                                        "SpawnUnit" => tx.send(ServerMessage::new(
+                                            user_id,
+                                            MessageType::PlayUnit(parsed.data.unwrap()),
+                                        ))?,
                                         _ => {}
                                     }
                                 }
@@ -169,7 +173,7 @@ pub enum MessageType {
     ConnectReq(String),
     Text(String),
     ConnectWs(WebSocketWriteStream),
-    PlayUnit(usize),
+    PlayUnit(String),
     BeginGame,
     Disconnect,
 }

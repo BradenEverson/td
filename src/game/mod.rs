@@ -1,3 +1,3 @@
 pub mod battle;
-pub mod cards;
+pub mod card_gen;
 pub mod entity;

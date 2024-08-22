@@ -1,7 +1,7 @@
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 
-use crate::game::cards::CARDS;
+use super::card_gen::UNITS;
 
 #[derive(Default, PartialEq, Clone, Copy, Serialize, Deserialize, Debug)]
 pub struct Unit<'a> {
@@ -18,6 +18,12 @@ pub struct Unit<'a> {
     attack_type: AttackType,
 }
 
+impl<'a> Unit<'a> {
+    pub fn get_name(&self) -> &str {
+        self.name
+    }
+}
+
 #[derive(Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum AttackType {
     Area,
@@ -26,16 +32,13 @@ pub enum AttackType {
 }
 
 pub fn draw_hand<'a, const NUM: usize>() -> Option<[Unit<'a>; NUM]> {
-    if NUM > CARDS.len() {
+    let cards = UNITS();
+    if NUM > cards.len() {
         return None;
     }
 
     let mut units = [Unit::default(); NUM];
-    let mut cards_available: Vec<Unit> = CARDS
-        .to_vec()
-        .iter_mut()
-        .map(|card| serde_json::from_str(card).unwrap())
-        .collect();
+    let mut cards_available = cards;
 
     let mut rng = rand::thread_rng();
 

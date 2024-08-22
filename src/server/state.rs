@@ -2,7 +2,10 @@ use super::{
     service::{ResponseType, ServerResponse},
     user::{User, UserStatus},
 };
-use crate::game::{battle::Battle, entity::draw_hand};
+use crate::game::{
+    battle::Battle,
+    entity::{draw_hand, Unit},
+};
 use rand::Rng;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -27,6 +30,27 @@ impl<'a> State<'a> {
     pub fn disconnect(&mut self, id: Uuid) {
         if self.users.contains_key(&id) {
             self.users.remove(&id);
+        }
+    }
+
+    pub fn get_opponent(&self, id: Uuid) -> Option<Uuid> {
+        let user_state = *self.users[&id].status();
+        if let UserStatus::InGame(battle_id) = user_state {
+            let battle = self.battles[&battle_id];
+
+            Some(battle.get_enemy(id))
+        } else {
+            None
+        }
+    }
+
+    pub fn get_card_from_user(&self, id: Uuid, card: usize) -> ServerResult<Unit> {
+        let user = &self.users[&id];
+
+        if let Some(card_in_hand) = user.get_card(card) {
+            Ok(card_in_hand.clone())
+        } else {
+            Err(ServerError::NoHandYetError)
         }
     }
 
