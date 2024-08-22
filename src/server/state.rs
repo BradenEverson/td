@@ -1,5 +1,5 @@
 use super::{
-    service::ServerResponse,
+    service::{ResponseType, ServerResponse},
     user::{User, UserStatus},
 };
 use crate::game::{battle::Battle, entity::draw_hand};
@@ -59,6 +59,26 @@ impl<'a> State<'a> {
         for (_, user) in self.users.iter_mut().filter(|(id, _)| to.contains(id)) {
             user.message(&msg)?.await?
         }
+        Ok(())
+    }
+
+    pub async fn broadcast_users_hand(&mut self, id: Uuid) -> ServerResult<()> {
+        if !self.users.contains_key(&id) {
+            return Err(ServerError::InvalidUserIdError);
+        }
+
+        let user = self.users.get_mut(&id).unwrap();
+        let hand = user.get_hand();
+
+        if hand.is_none() {
+            return Err(ServerError::NoHandYetError);
+        }
+
+        let hand = hand.unwrap();
+        let response = ServerResponse::new(ResponseType::DrawnHand(hand));
+
+        user.message(&response)?.await?;
+
         Ok(())
     }
 
@@ -134,6 +154,10 @@ pub enum ServerError {
     SocketDisconnectedError,
     #[error("Tungstenite socket send error")]
     TungstentiteError(#[from] hyper_tungstenite::tungstenite::Error),
+    #[error("Requested hand when it did not exist")]
+    NoHandYetError,
+    #[error("User does not exist")]
+    InvalidUserIdError,
 }
 
 pub type ServerResult<T> = std::result::Result<T, ServerError>;

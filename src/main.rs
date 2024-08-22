@@ -128,6 +128,15 @@ async fn main() {
                                 .broadcast_to(message_b, &[msg.from])
                                 .await
                                 .expect("Failed to broadcast message");
+
+                            state
+                                .broadcast_users_hand(against)
+                                .await
+                                .expect("Failed to send hand");
+                            state
+                                .broadcast_users_hand(msg.from)
+                                .await
+                                .expect("Failed to send hand");
                         }
                         Err(error) => {
                             panic!("Starting game failed: {}\n\nPotential TODO: map error and if its a lobby full error broadcast that to the user", error);

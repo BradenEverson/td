@@ -36,6 +36,11 @@ impl<'a> User<'a> {
     pub fn set_id(&mut self, id: Uuid) {
         self.id = id
     }
+
+    pub fn get_hand(&self) -> Option<[Unit<'a>; GAME_HAND_SIZE]> {
+        self.spawn_hand
+    }
+
     pub fn status(&self) -> &UserStatus {
         &self.status
     }
