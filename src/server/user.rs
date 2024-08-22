@@ -6,7 +6,7 @@ use crate::game::entity::Unit;
 
 use super::{
     service::{ServerResponse, WebSocketWriteStream},
-    state::{ServerError, ServerResult},
+    state::{ServerError, ServerResult, GAME_HAND_SIZE},
 };
 
 #[derive(Default)]
@@ -14,7 +14,7 @@ pub struct User<'a> {
     id: Uuid,
     name: Option<String>,
     status: UserStatus,
-    spawn_hand: [Option<Unit<'a>>; 5],
+    spawn_hand: Option<[Unit<'a>; GAME_HAND_SIZE]>,
     socket: Option<WebSocketWriteStream>,
 }
 
@@ -40,13 +40,19 @@ impl<'a> User<'a> {
         &self.status
     }
 
-    pub fn enter_game(&mut self, battle: Uuid) {
-        self.status = UserStatus::InGame(battle)
+    pub fn enter_game(&mut self, battle: Uuid, hand: [Unit<'a>; 5]) {
+        self.status = UserStatus::InGame(battle);
+        self.set_hand(hand)
     }
 
     pub fn leave_game(&mut self) {
         self.status = UserStatus::Lobby
     }
+
+    pub fn set_hand(&mut self, hand: [Unit<'a>; 5]) {
+        self.spawn_hand = Some(hand.to_owned());
+    }
+
     pub fn message(
         &mut self,
         message: &ServerResponse,

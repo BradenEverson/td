@@ -2,10 +2,12 @@ use super::{
     service::ServerResponse,
     user::{User, UserStatus},
 };
-use crate::game::battle::Battle;
+use crate::game::{battle::Battle, entity::draw_hand};
 use rand::Rng;
 use std::collections::HashMap;
 use uuid::Uuid;
+
+pub const GAME_HAND_SIZE: usize = 5;
 
 #[derive(Default)]
 pub struct State<'a> {
@@ -88,15 +90,18 @@ impl<'a> State<'a> {
 
         self.battles.insert(battle_id, new_battle);
 
+        let hand_a = draw_hand::<GAME_HAND_SIZE>().unwrap();
+        let hand_b = draw_hand::<GAME_HAND_SIZE>().unwrap();
+
         {
             self.users
                 .get_mut(&user_a_id)
                 .unwrap()
-                .enter_game(battle_id);
+                .enter_game(battle_id, hand_a);
             self.users
                 .get_mut(&user_b_id)
                 .unwrap()
-                .enter_game(battle_id);
+                .enter_game(battle_id, hand_b);
         }
 
         Ok((battle_id, user_b_id))
