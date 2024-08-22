@@ -10,15 +10,15 @@ use super::{
 };
 
 #[derive(Default)]
-pub struct User {
+pub struct User<'a> {
     id: Uuid,
     name: Option<String>,
     status: UserStatus,
-    spawn_hand: [Option<Unit>; 5],
+    spawn_hand: [Option<Unit<'a>>; 5],
     socket: Option<WebSocketWriteStream>,
 }
 
-impl User {
+impl<'a> User<'a> {
     pub fn name(&self) -> Option<&String> {
         self.name.as_ref()
     }

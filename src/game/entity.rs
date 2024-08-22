@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Unit {
-    name: String,
+pub struct Unit<'a> {
+    name: &'a str,
     emoji: char,
 
     cost: usize,

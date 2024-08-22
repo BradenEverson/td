@@ -8,17 +8,17 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 #[derive(Default)]
-pub struct State {
-    users: HashMap<Uuid, User>,
+pub struct State<'a> {
+    users: HashMap<Uuid, User<'a>>,
     battles: HashMap<Uuid, Battle>,
 }
 
-impl State {
+impl<'a> State<'a> {
     pub fn get_name(&self, id: Uuid) -> Option<&String> {
         self.users[&id].name()
     }
 
-    pub fn connect(&mut self, id: Uuid, user: User) {
+    pub fn connect(&mut self, id: Uuid, user: User<'a>) {
         self.users.insert(id, user);
     }
 
