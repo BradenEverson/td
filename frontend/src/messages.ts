@@ -27,19 +27,19 @@ interface StartGame {
 }
 
 interface DrawnHand {
-  DrawnHand: Array<Unit>
+  DrawnHand: Array<Unit>;
 }
 
 export type Unit = {
-  name: string,
-  emoji: string,
-  cost: number,
-  health: number,
-  power: number,
-  size: number,
-  speed: number,
-  attack_type: Attack
-}
+  name: string;
+  emoji: string;
+  cost: number;
+  health: number;
+  power: number;
+  size: number;
+  speed: number;
+  attack_type: Attack;
+};
 
 export type Attack = "Area" | "Single";
 

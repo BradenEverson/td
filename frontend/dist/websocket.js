@@ -26,14 +26,16 @@ function handleServerResponse(response) {
         if (ctx) {
             const buttonWidth = canvas.width / drawnHand.length;
             const buttonHeight = canvas.height * 0.2;
-            const cooldowns = drawnHand.map(unit => unit.power * unit.speed * 500);
+            const cooldowns = drawnHand.map(unit => unit.power * (1 / unit.speed) * 500);
             const cooldownStartTimes = new Array(drawnHand.length).fill(Date.now());
             function drawMoney() {
                 if (ctx) {
                     ctx.clearRect(canvas.width - 200, 0, 200, 50);
                     ctx.font = "30px Arial";
-                    ctx.fillStyle = "#ffffff";
                     ctx.textAlign = "right";
+                    ctx.fillStyle = "#87CEEB";
+                    ctx.fillRect(canvas.width - 200, 0, 200, 50);
+                    ctx.fillStyle = "#ffffff";
                     ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
                 }
             }
@@ -103,6 +105,12 @@ function handleServerResponse(response) {
                 userMoney += 1;
                 drawButtons();
             }, 100);
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                drawButtons();
+                drawMoney();
+            });
         }
     }
     else {
@@ -126,21 +134,36 @@ function switchToGameView(username, opponentName) {
     document.body.appendChild(canvas);
     const ctx = canvas.getContext("2d");
     if (ctx) {
-        ctx.font = `${canvas.width * 0.05}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText(username, canvas.width / 4, canvas.height / 2);
-        ctx.fillText(opponentName, (3 * canvas.width) / 4, canvas.height / 2);
-    }
-    window.addEventListener("resize", () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = `${canvas.width * 0.05}px Arial`;
-            ctx.fillText(username, canvas.width / 4, canvas.height / 2);
-            ctx.fillText(opponentName, (3 * canvas.width) / 4, canvas.height / 2);
+        const towerSize = canvas.width * 0.1;
+        const towerPadding = canvas.width * 0.05;
+        function drawBattlefield() {
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#87CEEB";
+                ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
+                ctx.fillStyle = "#228B22";
+                ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+                const userTowerX = towerPadding + towerSize / 2;
+                const userTowerY = canvas.height * 0.7;
+                ctx.font = `${towerSize}px Arial`;
+                ctx.textAlign = "center";
+                ctx.fillText("🏡", userTowerX, userTowerY);
+                const opponentTowerX = canvas.width - towerPadding - towerSize / 2;
+                const opponentTowerY = canvas.height * 0.7;
+                ctx.fillText("🏡", opponentTowerX, opponentTowerY);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = `${canvas.width * 0.03}px Arial`;
+                ctx.fillText(username, userTowerX, userTowerY - towerSize);
+                ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
+            }
         }
-    });
+        drawBattlefield();
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawBattlefield();
+        });
+    }
 }
 function displayMessage(text) {
     const messagesDiv = document.getElementById("messages");

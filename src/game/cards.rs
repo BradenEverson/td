@@ -3,7 +3,7 @@
 pub static CARDS: &[&str] = &[
     r#"{"name":"Silly","emoji":"🤗","cost":165,"health":90,"power":20,"size":1.0,"speed":1.0,"attack_type":"Single"}"#,
     r#"{"name":"Ninja","emoji":"🥷","cost":200,"health":100,"power":20,"size":1.0,"speed":1.4,"attack_type":"Single"}"#,
-    r#"{"name":"EXPLOSIVE","emoji":"🧨","cost":1000,"health":1,"power":999999,"size":1.2,"speed":10.0,"attack_type":"Area"}"#,
+    r#"{"name":"EXPLOSIVE","emoji":"🧨","cost":1000,"health":1,"power":9999,"size":1.2,"speed":10.0,"attack_type":"Area"}"#,
     r#"{"name":"Golem","emoji":"🗿","cost":2500,"health":1500,"power":55,"size":2.5,"speed":0.2,"attack_type":"Area"}"#,
     r#"{"name":"Snowman","emoji":"⛄","cost":340,"health":175,"power":30,"size":1.0,"speed":0.85,"attack_type":"Single"}"#,
     r#"{"name":"Sneaker","emoji":"🫥","cost":75,"health":40,"power":25,"size":0.99,"speed":1.5,"attack_type":"Single"}"#,
