@@ -75,7 +75,7 @@ impl<'a> State<'a> {
         }
 
         let hand = hand.unwrap();
-        let response = ServerResponse::new(ResponseType::DrawnHand(hand));
+        let response = ServerResponse::new(ResponseType::DrawnHand(Box::new(hand)));
 
         user.message(&response)?.await?;
 
@@ -86,7 +86,7 @@ impl<'a> State<'a> {
         let mut rng = rand::thread_rng();
         let users: Vec<Uuid> = self.available_users(id);
 
-        if users.len() < 1 {
+        if users.is_empty() {
             return Err(ServerError::NotEnoughInLobbyToStartError);
         }
 

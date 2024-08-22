@@ -5,7 +5,7 @@ use hyper_util::rt::TokioIo;
 use td::server::service::{
     MessageType, ResponseType, ServerMessage, ServerResponse, ServerService,
 };
-use td::server::state::State;
+use td::server::state::{State, GAME_HAND_SIZE};
 use td::server::user::User;
 use tokio::net::TcpListener;
 use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
@@ -64,7 +64,7 @@ async fn main() {
                         Some(name) => name.clone(),
                         None => "".to_string(),
                     };
-                    let response = ServerResponse::new(ResponseType::Chat(name.into(), txt));
+                    let response = ServerResponse::new(ResponseType::Chat(name, txt));
                     state
                         .write()
                         .await
@@ -141,6 +141,11 @@ async fn main() {
                         Err(error) => {
                             panic!("Starting game failed: {}\n\nPotential TODO: map error and if its a lobby full error broadcast that to the user", error);
                         }
+                    }
+                }
+                MessageType::PlayUnit(loc_in_hand) => {
+                    if loc_in_hand < GAME_HAND_SIZE {
+                        todo!("Grab unit from users hand and send back a UnitPlayed response")
                     }
                 }
             }

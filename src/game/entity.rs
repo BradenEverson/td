@@ -41,9 +41,9 @@ pub fn draw_hand<'a, const NUM: usize>() -> Option<[Unit<'a>; NUM]> {
 
     cards_available.shuffle(&mut rng);
 
-    for i in 0..NUM {
-        if let Some(unit) = cards_available.pop() {
-            units[i] = unit;
+    for unit in units.iter_mut().take(NUM) {
+        if let Some(drawn) = cards_available.pop() {
+            *unit = drawn;
         } else {
             return None;
         }

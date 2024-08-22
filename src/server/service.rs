@@ -169,6 +169,7 @@ pub enum MessageType {
     ConnectReq(String),
     Text(String),
     ConnectWs(WebSocketWriteStream),
+    PlayUnit(usize),
     BeginGame,
     Disconnect,
 }
@@ -191,7 +192,9 @@ pub enum ResponseType<'a> {
     UserJoin(String),
     UserLeave(String),
     StartGame(String, String),
-    DrawnHand([Unit<'a>; GAME_HAND_SIZE]),
+    DrawnHand(Box<[Unit<'a>; GAME_HAND_SIZE]>),
+    // True if spawned from client, false if not
+    UnitSpawned(bool, Box<Unit<'a>>),
 }
 
 /// Type for interfacing with TypeScript WebSocket

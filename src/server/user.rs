@@ -9,6 +9,15 @@ use super::{
     state::{ServerError, ServerResult, GAME_HAND_SIZE},
 };
 
+pub type WebsocketMessageFuture<'a> = Send<
+    'a,
+    futures::prelude::stream::SplitSink<
+        tokio_tungstenite::WebSocketStream<hyper_util::rt::TokioIo<hyper::upgrade::Upgraded>>,
+        Message,
+    >,
+    Message,
+>;
+
 #[derive(Default)]
 pub struct User<'a> {
     id: Uuid,
@@ -58,20 +67,7 @@ impl<'a> User<'a> {
         self.spawn_hand = Some(hand.to_owned());
     }
 
-    pub fn message(
-        &mut self,
-        message: &ServerResponse,
-    ) -> ServerResult<
-        Send<
-            futures::prelude::stream::SplitSink<
-                tokio_tungstenite::WebSocketStream<
-                    hyper_util::rt::TokioIo<hyper::upgrade::Upgraded>,
-                >,
-                Message,
-            >,
-            Message,
-        >,
-    > {
+    pub fn message(&mut self, message: &ServerResponse) -> ServerResult<WebsocketMessageFuture> {
         if let Some(socket) = &mut self.socket {
             let msg = serde_json::to_string(&message)?;
             Ok(socket.send(Message::text(msg)))
