@@ -26,12 +26,30 @@ interface StartGame {
   StartGame: [Uuid, Uuid];
 }
 
+interface DrawnHand {
+  DrawnHand: Array<Unit>
+}
+
+export type Unit = {
+  name: string,
+  emoji: string,
+  cost: number,
+  health: number,
+  power: number,
+  size: number,
+  speed: number,
+  attack_type: Attack
+}
+
+export type Attack = "Area" | "Single";
+
 export type ServerResponseType =
   | GameStart
   | Chat
   | UserJoin
   | UserLeave
-  | StartGame;
+  | StartGame
+  | DrawnHand;
 
 export interface ServerResponse {
   message: ServerResponseType;
