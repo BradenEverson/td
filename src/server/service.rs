@@ -14,6 +14,10 @@ use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 use uuid::Uuid;
 
+use crate::game::entity::Unit;
+
+use super::state::GAME_HAND_SIZE;
+
 pub struct ServerService {
     pub sender: UnboundedSender<ServerMessage>,
 }
@@ -169,24 +173,25 @@ pub enum MessageType {
     Disconnect,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ServerResponse {
-    message: ResponseType,
+#[derive(Serialize, Debug)]
+pub struct ServerResponse<'a> {
+    message: ResponseType<'a>,
 }
 
-impl ServerResponse {
-    pub fn new(response: ResponseType) -> Self {
+impl<'a> ServerResponse<'a> {
+    pub fn new(response: ResponseType<'a>) -> Self {
         Self { message: response }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub enum ResponseType {
+#[derive(Serialize, Debug)]
+pub enum ResponseType<'a> {
     Chat(String, String),
     GameStart(Uuid),
     UserJoin(String),
     UserLeave(String),
     StartGame(String, String),
+    DrawnHand([Unit<'a>; GAME_HAND_SIZE]),
 }
 
 /// Type for interfacing with TypeScript WebSocket
