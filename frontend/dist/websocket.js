@@ -1,4 +1,6 @@
 export const socket = new WebSocket("/");
+let playerUnits = [];
+let enemyUnits = [];
 function handleServerResponse(response) {
     if ("Chat" in response.message) {
         console.log("Chat message");
@@ -26,7 +28,7 @@ function handleServerResponse(response) {
         if (ctx) {
             const buttonWidth = canvas.width / drawnHand.length;
             const buttonHeight = canvas.height * 0.2;
-            const cooldowns = drawnHand.map(unit => unit.power * (1 / unit.speed) * 500);
+            const cooldowns = drawnHand.map((unit) => unit.power * (1 / unit.speed) * 500);
             const cooldownStartTimes = new Array(drawnHand.length).fill(Date.now());
             function drawMoney() {
                 if (ctx) {
@@ -112,6 +114,32 @@ function handleServerResponse(response) {
                 drawButtons();
                 drawMoney();
             });
+        }
+    }
+    else if ("UnitSpawned" in response.message) {
+        const canvas = document.getElementById("game-canvas");
+        const towerSize = canvas.width * 0.1;
+        const towerPadding = canvas.width * 0.05;
+        const userTowerX = towerPadding + towerSize / 2;
+        const userTowerY = canvas.height * 0.7;
+        const opponentTowerX = canvas.width - towerPadding - towerSize / 2;
+        const opponentTowerY = canvas.height * 0.7;
+        let [isOurs, unit] = response.message.UnitSpawned;
+        if (isOurs) {
+            let unit_metadata = {
+                unit: unit,
+                position: [userTowerX, userTowerY],
+                target: [opponentTowerX, opponentTowerY],
+            };
+            playerUnits.push(unit_metadata);
+        }
+        else {
+            let unit_metadata = {
+                unit: unit,
+                position: [opponentTowerX, opponentTowerY],
+                target: [userTowerX, userTowerY],
+            };
+            enemyUnits.push(unit_metadata);
         }
     }
     else {
@@ -216,7 +244,7 @@ export function join(username) {
 export function sendUnit(unitId) {
     let sendUnit = {
         type: "SpawnUnit",
-        data: unitId
+        data: unitId,
     };
     sendMessage(sendUnit);
 }
