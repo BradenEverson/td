@@ -146,6 +146,17 @@ function handleServerResponse(response) {
         console.log(response.message);
     }
 }
+function updateAllUnits() {
+    console.log("Updating units");
+    for (let i = 0; i < playerUnits.length; i++) {
+        let unit = playerUnits[i];
+        unit.position[0] += unit.unit.speed;
+    }
+    for (let i = 0; i < enemyUnits.length; i++) {
+        let unit = enemyUnits[i];
+        unit.position[0] -= unit.unit.speed;
+    }
+}
 function switchToGameView(username, opponentName) {
     const chatContainer = document.getElementById("chat-container");
     if (chatContainer) {
@@ -184,14 +195,25 @@ function switchToGameView(username, opponentName) {
                 ctx.font = `${canvas.width * 0.03}px Arial`;
                 ctx.fillText(username, userTowerX, userTowerY - towerSize);
                 ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
+                updateAllUnits();
+                for (let i = 0; i < playerUnits.length; i++) {
+                    let unit = playerUnits[i];
+                    ctx.font = `${10 * unit.unit.size}px Arial`;
+                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
+                }
+                for (let i = 0; i < enemyUnits.length; i++) {
+                    let unit = enemyUnits[i];
+                    ctx.font = `${10 * unit.unit.size}px Arial`;
+                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
+                }
             }
         }
-        drawBattlefield();
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             drawBattlefield();
         });
+        drawBattlefield();
     }
 }
 function displayMessage(text) {
