@@ -31,6 +31,10 @@ interface DrawnHand {
   DrawnHand: Array<Unit>;
 }
 
+interface UnitSpawned {
+  UnitSpawned: [boolean, Unit];
+}
+
 export type Unit = {
   name: string;
   emoji: string;
@@ -50,7 +54,8 @@ export type ServerResponseType =
   | UserJoin
   | UserLeave
   | StartGame
-  | DrawnHand;
+  | DrawnHand
+  | UnitSpawned;
 
 export interface ServerResponse {
   message: ServerResponseType;
