@@ -1,6 +1,20 @@
-import { MessageType, ServerResponse, ServerResponseType, Unit } from "./messages";
+import {
+  MessageType,
+  ServerResponse,
+  ServerResponseType,
+  Unit,
+} from "./messages";
 
 export const socket = new WebSocket("/");
+
+type UnitMetadata = {
+  unit: Unit;
+  position: [number, number];
+  target: [number, number];
+};
+
+let playerUnits: Array<UnitMetadata> = [];
+let enemyUnits: Array<UnitMetadata> = [];
 
 function handleServerResponse(response: ServerResponse) {
   if ("Chat" in response.message) {
@@ -30,8 +44,12 @@ function handleServerResponse(response: ServerResponse) {
       const buttonWidth = canvas.width / drawnHand.length;
       const buttonHeight = canvas.height * 0.2;
 
-      const cooldowns: Array<number> = drawnHand.map(unit => unit.power * (1 / unit.speed) * 500);
-      const cooldownStartTimes: Array<number> = new Array(drawnHand.length).fill(Date.now());
+      const cooldowns: Array<number> = drawnHand.map(
+        (unit) => unit.power * (1 / unit.speed) * 500,
+      );
+      const cooldownStartTimes: Array<number> = new Array(
+        drawnHand.length,
+      ).fill(Date.now());
 
       function drawMoney() {
         if (ctx) {
@@ -49,7 +67,12 @@ function handleServerResponse(response: ServerResponse) {
 
       function drawButtons() {
         if (ctx) {
-          ctx.clearRect(0, canvas.height - buttonHeight, canvas.width, buttonHeight);
+          ctx.clearRect(
+            0,
+            canvas.height - buttonHeight,
+            canvas.width,
+            buttonHeight,
+          );
 
           const now = Date.now();
 
@@ -77,7 +100,12 @@ function handleServerResponse(response: ServerResponse) {
 
             if (remainingCooldown > 0) {
               ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-              ctx.fillRect(x, y, buttonWidth, buttonHeight * cooldownPercentage);
+              ctx.fillRect(
+                x,
+                y,
+                buttonWidth,
+                buttonHeight * cooldownPercentage,
+              );
             }
 
             const priceFontSize = buttonHeight * 0.2;
@@ -92,7 +120,6 @@ function handleServerResponse(response: ServerResponse) {
 
           drawMoney();
         }
-
       }
 
       drawButtons();
@@ -141,6 +168,35 @@ function handleServerResponse(response: ServerResponse) {
         drawButtons();
         drawMoney();
       });
+    }
+  } else if ("UnitSpawned" in response.message) {
+    const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
+
+    const towerSize = canvas.width * 0.1;
+    const towerPadding = canvas.width * 0.05;
+    const userTowerX = towerPadding + towerSize / 2;
+    const userTowerY = canvas.height * 0.7;
+    const opponentTowerX = canvas.width - towerPadding - towerSize / 2;
+    const opponentTowerY = canvas.height * 0.7;
+
+    let [isOurs, unit] = response.message.UnitSpawned;
+
+    if (isOurs) {
+      let unit_metadata: UnitMetadata = {
+        unit: unit,
+        position: [userTowerX, userTowerY],
+        target: [opponentTowerX, opponentTowerY],
+      };
+
+      playerUnits.push(unit_metadata);
+    } else {
+      let unit_metadata: UnitMetadata = {
+        unit: unit,
+        position: [opponentTowerX, opponentTowerY],
+        target: [userTowerX, userTowerY],
+      };
+
+      enemyUnits.push(unit_metadata);
     }
   } else {
     console.log(response.message);
@@ -199,7 +255,6 @@ function switchToGameView(username: string, opponentName: string) {
 
         ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
       }
-
     }
 
     drawBattlefield();
@@ -211,7 +266,6 @@ function switchToGameView(username: string, opponentName: string) {
     });
   }
 }
-
 
 function displayMessage(text: string) {
   const messagesDiv = document.getElementById("messages");
@@ -273,7 +327,7 @@ export function join(username: string) {
 export function sendUnit(unitId: string) {
   let sendUnit: MessageType = {
     type: "SpawnUnit",
-    data: unitId
+    data: unitId,
   };
 
   sendMessage(sendUnit);
