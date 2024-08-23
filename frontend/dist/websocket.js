@@ -1,6 +1,8 @@
 export const socket = new WebSocket("/");
 let playerUnits = [];
 let enemyUnits = [];
+let drawnHand = null;
+let userMoney = 50;
 function handleServerResponse(response) {
     if ("Chat" in response.message) {
         console.log("Chat message");
@@ -21,28 +23,16 @@ function handleServerResponse(response) {
         switchToGameView(userName, opponentName);
     }
     else if ("DrawnHand" in response.message) {
-        const drawnHand = response.message.DrawnHand;
+        drawnHand = response.message.DrawnHand;
         const canvas = document.getElementById("game-canvas");
         const ctx = canvas === null || canvas === void 0 ? void 0 : canvas.getContext("2d");
-        let userMoney = 50;
         if (ctx) {
             const buttonWidth = canvas.width / drawnHand.length;
             const buttonHeight = canvas.height * 0.2;
             const cooldowns = drawnHand.map((unit) => unit.power * (1 / unit.speed) * 500);
             const cooldownStartTimes = new Array(drawnHand.length).fill(Date.now());
-            function drawMoney() {
-                if (ctx) {
-                    ctx.clearRect(canvas.width - 200, 0, 200, 50);
-                    ctx.font = "30px Arial";
-                    ctx.textAlign = "right";
-                    ctx.fillStyle = "#87CEEB";
-                    ctx.fillRect(canvas.width - 200, 0, 200, 50);
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
-                }
-            }
             function drawButtons() {
-                if (ctx) {
+                if (ctx && drawnHand) {
                     ctx.clearRect(0, canvas.height - buttonHeight, canvas.width, buttonHeight);
                     const now = Date.now();
                     drawnHand.forEach((unit, index) => {
@@ -75,7 +65,6 @@ function handleServerResponse(response) {
                         const priceY = y + buttonHeight - priceFontSize * 0.5;
                         ctx.fillText(priceText, priceX + textMetrics.width / 2, priceY);
                     });
-                    drawMoney();
                 }
             }
             drawButtons();
@@ -83,26 +72,27 @@ function handleServerResponse(response) {
                 const rect = canvas.getBoundingClientRect();
                 const clickX = event.clientX - rect.left;
                 const clickY = event.clientY - rect.top;
-                drawnHand.forEach((unit, index) => {
-                    const x = index * buttonWidth;
-                    const y = canvas.height - buttonHeight;
-                    const cooldownDuration = cooldowns[index];
-                    const now = Date.now();
-                    const elapsed = now - cooldownStartTimes[index];
-                    const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
-                    if (clickX > x &&
-                        clickX < x + buttonWidth &&
-                        clickY > y &&
-                        clickY < y + buttonHeight &&
-                        remainingCooldown === 0 &&
-                        userMoney >= unit.cost) {
-                        sendUnit(unit.name);
-                        console.log(`Spawning unit: ${unit.name}`);
-                        userMoney -= unit.cost;
-                        cooldownStartTimes[index] = Date.now();
-                        drawButtons();
-                    }
-                });
+                if (drawnHand) {
+                    drawnHand.forEach((unit, index) => {
+                        const x = index * buttonWidth;
+                        const y = canvas.height - buttonHeight;
+                        const cooldownDuration = cooldowns[index];
+                        const now = Date.now();
+                        const elapsed = now - cooldownStartTimes[index];
+                        const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
+                        if (clickX > x &&
+                            clickX < x + buttonWidth &&
+                            clickY > y &&
+                            clickY < y + buttonHeight &&
+                            remainingCooldown === 0 &&
+                            userMoney >= unit.cost) {
+                            sendUnit(unit.name);
+                            userMoney -= unit.cost;
+                            cooldownStartTimes[index] = Date.now();
+                            drawButtons();
+                        }
+                    });
+                }
             });
             setInterval(() => {
                 userMoney += 1;
@@ -112,7 +102,6 @@ function handleServerResponse(response) {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 drawButtons();
-                drawMoney();
             });
         }
     }
@@ -150,11 +139,11 @@ function updateAllUnits() {
     console.log("Updating units");
     for (let i = 0; i < playerUnits.length; i++) {
         let unit = playerUnits[i];
-        unit.position[0] += unit.unit.speed;
+        unit.position[0] += unit.unit.speed / 10;
     }
     for (let i = 0; i < enemyUnits.length; i++) {
         let unit = enemyUnits[i];
-        unit.position[0] -= unit.unit.speed;
+        unit.position[0] -= unit.unit.speed / 10;
     }
 }
 function switchToGameView(username, opponentName) {
@@ -177,6 +166,7 @@ function switchToGameView(username, opponentName) {
         const towerSize = canvas.width * 0.1;
         const towerPadding = canvas.width * 0.05;
         function drawBattlefield() {
+            console.log("Drawing battlefield frame");
             if (ctx) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "#87CEEB";
@@ -198,22 +188,28 @@ function switchToGameView(username, opponentName) {
                 updateAllUnits();
                 for (let i = 0; i < playerUnits.length; i++) {
                     let unit = playerUnits[i];
-                    ctx.font = `${10 * unit.unit.size}px Arial`;
+                    ctx.font = `${30 * unit.unit.size}px Arial`;
                     ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
                 }
                 for (let i = 0; i < enemyUnits.length; i++) {
                     let unit = enemyUnits[i];
-                    ctx.font = `${10 * unit.unit.size}px Arial`;
+                    ctx.font = `${30 * unit.unit.size}px Arial`;
                     ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
                 }
+                ctx.clearRect(canvas.width - 200, 0, 200, 50);
+                ctx.font = "30px Arial";
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#87CEEB";
+                ctx.fillRect(canvas.width - 200, 0, 200, 50);
+                ctx.fillStyle = "#ffffff";
+                ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
             }
         }
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            drawBattlefield();
         });
-        drawBattlefield();
+        setInterval(drawBattlefield, 10);
     }
 }
 function displayMessage(text) {

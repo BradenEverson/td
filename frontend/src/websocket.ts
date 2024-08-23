@@ -15,6 +15,9 @@ type UnitMetadata = {
 
 let playerUnits: Array<UnitMetadata> = [];
 let enemyUnits: Array<UnitMetadata> = [];
+let drawnHand: Array<Unit> | null = null;
+
+let userMoney: number = 50;
 
 function handleServerResponse(response: ServerResponse) {
   if ("Chat" in response.message) {
@@ -33,12 +36,10 @@ function handleServerResponse(response: ServerResponse) {
     const opponentName = response.message.StartGame[1];
     switchToGameView(userName, opponentName);
   } else if ("DrawnHand" in response.message) {
-    const drawnHand: Array<Unit> = response.message.DrawnHand;
+    drawnHand = response.message.DrawnHand;
 
     const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
     const ctx = canvas?.getContext("2d");
-
-    let userMoney = 50;
 
     if (ctx) {
       const buttonWidth = canvas.width / drawnHand.length;
@@ -51,22 +52,8 @@ function handleServerResponse(response: ServerResponse) {
         drawnHand.length,
       ).fill(Date.now());
 
-      function drawMoney() {
-        if (ctx) {
-          ctx.clearRect(canvas.width - 200, 0, 200, 50);
-          ctx.font = "30px Arial";
-          ctx.textAlign = "right";
-
-          ctx.fillStyle = "#87CEEB";
-          ctx.fillRect(canvas.width - 200, 0, 200, 50);
-
-          ctx.fillStyle = "#ffffff";
-          ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
-        }
-      }
-
       function drawButtons() {
-        if (ctx) {
+        if (ctx && drawnHand) {
           ctx.clearRect(
             0,
             canvas.height - buttonHeight,
@@ -118,7 +105,6 @@ function handleServerResponse(response: ServerResponse) {
             ctx.fillText(priceText, priceX + textMetrics.width / 2, priceY);
           });
 
-          drawMoney();
         }
       }
 
@@ -129,31 +115,33 @@ function handleServerResponse(response: ServerResponse) {
         const clickX = event.clientX - rect.left;
         const clickY = event.clientY - rect.top;
 
-        drawnHand.forEach((unit, index) => {
-          const x = index * buttonWidth;
-          const y = canvas.height - buttonHeight;
+        if (drawnHand) {
+          drawnHand.forEach((unit, index) => {
+            const x = index * buttonWidth;
+            const y = canvas.height - buttonHeight;
 
-          const cooldownDuration = cooldowns[index];
-          const now = Date.now();
-          const elapsed = now - cooldownStartTimes[index];
-          const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
+            const cooldownDuration = cooldowns[index];
+            const now = Date.now();
+            const elapsed = now - cooldownStartTimes[index];
+            const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
 
-          if (
-            clickX > x &&
-            clickX < x + buttonWidth &&
-            clickY > y &&
-            clickY < y + buttonHeight &&
-            remainingCooldown === 0 &&
-            userMoney >= unit.cost
-          ) {
-            sendUnit(unit.name);
-            console.log(`Spawning unit: ${unit.name}`);
+            if (
+              clickX > x &&
+              clickX < x + buttonWidth &&
+              clickY > y &&
+              clickY < y + buttonHeight &&
+              remainingCooldown === 0 &&
+              userMoney >= unit.cost
+            ) {
+              sendUnit(unit.name);
 
-            userMoney -= unit.cost;
-            cooldownStartTimes[index] = Date.now();
-            drawButtons();
-          }
-        });
+              userMoney -= unit.cost;
+              cooldownStartTimes[index] = Date.now();
+              drawButtons();
+            }
+          });
+        }
+
       });
 
       setInterval(() => {
@@ -166,7 +154,6 @@ function handleServerResponse(response: ServerResponse) {
         canvas.height = window.innerHeight;
 
         drawButtons();
-        drawMoney();
       });
     }
   } else if ("UnitSpawned" in response.message) {
@@ -207,11 +194,11 @@ function updateAllUnits() {
   console.log("Updating units")
   for (let i = 0; i < playerUnits.length; i++) {
     let unit = playerUnits[i];
-    unit.position[0] += unit.unit.speed;
+    unit.position[0] += unit.unit.speed / 10;
   }
   for (let i = 0; i < enemyUnits.length; i++) {
     let unit = enemyUnits[i];
-    unit.position[0] -= unit.unit.speed;
+    unit.position[0] -= unit.unit.speed / 10;
   }
 }
 
@@ -242,6 +229,7 @@ function switchToGameView(username: string, opponentName: string) {
     const towerPadding = canvas.width * 0.05;
 
     function drawBattlefield() {
+      console.log("Drawing battlefield frame");
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -271,26 +259,36 @@ function switchToGameView(username: string, opponentName: string) {
 
         for (let i = 0; i < playerUnits.length; i++) {
           let unit = playerUnits[i];
-          ctx.font = `${10 * unit.unit.size}px Arial`;
+          ctx.font = `${30 * unit.unit.size}px Arial`;
           ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
         }
         for (let i = 0; i < enemyUnits.length; i++) {
           let unit = enemyUnits[i];
-          ctx.font = `${10 * unit.unit.size}px Arial`;
+          ctx.font = `${30 * unit.unit.size}px Arial`;
           ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
         }
 
+        ctx.clearRect(canvas.width - 200, 0, 200, 50);
+        ctx.font = "30px Arial";
+        ctx.textAlign = "right";
+
+        ctx.fillStyle = "#87CEEB";
+        ctx.fillRect(canvas.width - 200, 0, 200, 50);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
+
       }
+
     }
 
 
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      drawBattlefield();
     });
 
-    requestAnimationFrame(drawBattlefield);
+    setInterval(drawBattlefield, 10);
   }
 }
 
