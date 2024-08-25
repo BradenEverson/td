@@ -218,12 +218,12 @@ function switchToGameView(username: string, opponentName: string) {
 
         for (let i = 0; i < playerUnits.length; i++) {
           let unit = playerUnits[i];
-          ctx.font = `${30 * unit.unit.size}px Arial`;
+          ctx.font = `${45 * unit.unit.size}px Arial`;
           ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
         }
         for (let i = 0; i < enemyUnits.length; i++) {
           let unit = enemyUnits[i];
-          ctx.font = `${30 * unit.unit.size}px Arial`;
+          ctx.font = `${45 * unit.unit.size}px Arial`;
           ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
         }
 
