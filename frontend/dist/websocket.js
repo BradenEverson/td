@@ -130,13 +130,13 @@ function switchToGameView(username, opponentName) {
                         console.log("Elapsed on " + unit.name + ": " + elapsed);
                         const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
                         const cooldownPercentage = remainingCooldown / cooldownDuration;
-                        ctx.fillStyle = remainingCooldown > 0 ? "#777777" : "#a37b48";
+                        ctx.fillStyle = remainingCooldown > 0 ? "#777777" : userMoney >= unit.cost ? "#a37b48" : "#91897e";
                         ctx.fillRect(x, y, buttonWidth, buttonHeight);
                         ctx.strokeStyle = "#654321";
                         ctx.lineWidth = 5;
                         ctx.strokeRect(x, y, buttonWidth, buttonHeight);
                         const emojiSize = buttonHeight * 0.6;
-                        ctx.font = `${emojiSize}px Arial`;
+                        ctx.font = userMoney < unit.cost && remainingCooldown <= 0 ? `italic ${emojiSize}px Arial` : `${emojiSize}px Arial`;
                         ctx.textAlign = "center";
                         ctx.fillStyle = "#ffffff";
                         ctx.fillText(unit.emoji, x + buttonWidth / 2, y + emojiSize);
