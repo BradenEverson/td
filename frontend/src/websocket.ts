@@ -16,6 +16,10 @@ type UnitMetadata = {
 let playerUnits: Array<UnitMetadata> = [];
 let enemyUnits: Array<UnitMetadata> = [];
 let drawnHand: Array<Unit> | null = null;
+let drawnHandSetup = false;
+
+let cooldownStartTimes: Array<number>;
+let cooldowns: Array<number>;
 
 let userMoney: number = 50;
 
@@ -38,124 +42,9 @@ function handleServerResponse(response: ServerResponse) {
   } else if ("DrawnHand" in response.message) {
     drawnHand = response.message.DrawnHand;
 
-    const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
-    const ctx = canvas?.getContext("2d");
-
-    if (ctx) {
-      const buttonWidth = canvas.width / drawnHand.length;
-      const buttonHeight = canvas.height * 0.2;
-
-      const cooldowns: Array<number> = drawnHand.map(
-        (unit) => unit.power * (1 / unit.speed) * 500,
-      );
-      const cooldownStartTimes: Array<number> = new Array(
-        drawnHand.length,
-      ).fill(Date.now());
-
-      function drawButtons() {
-        if (ctx && drawnHand) {
-          ctx.clearRect(
-            0,
-            canvas.height - buttonHeight,
-            canvas.width,
-            buttonHeight,
-          );
-
-          const now = Date.now();
-
-          drawnHand.forEach((unit, index) => {
-            const x = index * buttonWidth;
-            const y = canvas.height - buttonHeight;
-
-            const cooldownDuration = cooldowns[index];
-            const elapsed = now - cooldownStartTimes[index];
-            const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
-            const cooldownPercentage = remainingCooldown / cooldownDuration;
-
-            ctx.fillStyle = remainingCooldown > 0 ? "#777777" : "#a37b48";
-            ctx.fillRect(x, y, buttonWidth, buttonHeight);
-
-            ctx.strokeStyle = "#654321";
-            ctx.lineWidth = 5;
-            ctx.strokeRect(x, y, buttonWidth, buttonHeight);
-
-            const emojiSize = buttonHeight * 0.6;
-            ctx.font = `${emojiSize}px Arial`;
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#ffffff";
-            ctx.fillText(unit.emoji, x + buttonWidth / 2, y + emojiSize);
-
-            if (remainingCooldown > 0) {
-              ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-              ctx.fillRect(
-                x,
-                y,
-                buttonWidth,
-                buttonHeight * cooldownPercentage,
-              );
-            }
-
-            const priceFontSize = buttonHeight * 0.2;
-            ctx.font = `bold ${priceFontSize}px Arial`;
-            ctx.fillStyle = "#ffe400";
-            const priceText = `\$${unit.cost}`;
-            const textMetrics = ctx.measureText(priceText);
-            const priceX = x + buttonWidth / 2 - textMetrics.width / 2;
-            const priceY = y + buttonHeight - priceFontSize * 0.5;
-            ctx.fillText(priceText, priceX + textMetrics.width / 2, priceY);
-          });
-
-        }
-      }
-
-      drawButtons();
-
-      canvas.addEventListener("click", (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const clickX = event.clientX - rect.left;
-        const clickY = event.clientY - rect.top;
-
-        if (drawnHand) {
-          drawnHand.forEach((unit, index) => {
-            const x = index * buttonWidth;
-            const y = canvas.height - buttonHeight;
-
-            const cooldownDuration = cooldowns[index];
-            const now = Date.now();
-            const elapsed = now - cooldownStartTimes[index];
-            const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
-
-            if (
-              clickX > x &&
-              clickX < x + buttonWidth &&
-              clickY > y &&
-              clickY < y + buttonHeight &&
-              remainingCooldown === 0 &&
-              userMoney >= unit.cost
-            ) {
-              sendUnit(unit.name);
-
-              userMoney -= unit.cost;
-              cooldownStartTimes[index] = Date.now();
-              drawButtons();
-            }
-          });
-        }
-
-      });
-
-      setInterval(() => {
-        userMoney += 1;
-        drawButtons();
-      }, 100);
-
-      window.addEventListener("resize", () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        drawButtons();
-      });
-    }
+    setInterval(() => {
+      userMoney += 1;
+    }, 100);
   } else if ("UnitSpawned" in response.message) {
     const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 
@@ -191,7 +80,7 @@ function handleServerResponse(response: ServerResponse) {
 }
 
 function updateAllUnits() {
-  console.log("Updating units")
+  console.log("Updating units");
   for (let i = 0; i < playerUnits.length; i++) {
     let unit = playerUnits[i];
     unit.position[0] += unit.unit.speed / 10;
@@ -225,11 +114,13 @@ function switchToGameView(username: string, opponentName: string) {
   const ctx = canvas.getContext("2d");
 
   if (ctx) {
+    let buttonWidth: number;
+    let buttonHeight: number;
+
     const towerSize = canvas.width * 0.1;
     const towerPadding = canvas.width * 0.05;
 
     function drawBattlefield() {
-      console.log("Drawing battlefield frame");
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -255,6 +146,66 @@ function switchToGameView(username: string, opponentName: string) {
 
         ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
 
+        // Draw The Card Buttons:
+        if (drawnHand) {
+          if (!drawnHandSetup) {
+            drawnHandSetup = true;
+
+            cooldowns = drawnHand.map(
+              (unit) => unit.power * (1 / unit.speed) * 500,
+            );
+
+            cooldownStartTimes = new Array(drawnHand.length).fill(Date.now());
+          }
+
+          buttonWidth = canvas.width / drawnHand.length;
+          buttonHeight = canvas.height * 0.2;
+
+          const now = Date.now();
+          drawnHand.forEach((unit, index) => {
+            const x = index * buttonWidth;
+            const y = canvas.height - buttonHeight;
+
+            const cooldownDuration = cooldowns[index];
+            const elapsed = now - cooldownStartTimes[index];
+            console.log("Elapsed on " + unit.name + ": " + elapsed);
+            const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
+            const cooldownPercentage = remainingCooldown / cooldownDuration;
+
+            ctx.fillStyle = remainingCooldown > 0 ? "#777777" : "#a37b48";
+            ctx.fillRect(x, y, buttonWidth, buttonHeight);
+
+            ctx.strokeStyle = "#654321";
+            ctx.lineWidth = 5;
+            ctx.strokeRect(x, y, buttonWidth, buttonHeight);
+
+            const emojiSize = buttonHeight * 0.6;
+            ctx.font = `${emojiSize}px Arial`;
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(unit.emoji, x + buttonWidth / 2, y + emojiSize);
+
+            if (remainingCooldown > 0) {
+              ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+              ctx.fillRect(
+                x,
+                y,
+                buttonWidth,
+                buttonHeight * cooldownPercentage,
+              );
+            }
+
+            const priceFontSize = buttonHeight * 0.2;
+            ctx.font = `bold ${priceFontSize}px Arial`;
+            ctx.fillStyle = "#ffe400";
+            const priceText = `\$${unit.cost}`;
+            const textMetrics = ctx.measureText(priceText);
+            const priceX = x + buttonWidth / 2 - textMetrics.width / 2;
+            const priceY = y + buttonHeight - priceFontSize * 0.5;
+            ctx.fillText(priceText, priceX + textMetrics.width / 2, priceY);
+          });
+        }
+
         updateAllUnits();
 
         for (let i = 0; i < playerUnits.length; i++) {
@@ -277,15 +228,45 @@ function switchToGameView(username: string, opponentName: string) {
 
         ctx.fillStyle = "#ffffff";
         ctx.fillText(`Money: ${userMoney}`, canvas.width - 10, 40);
-
       }
-
     }
-
 
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+    });
+
+    canvas.addEventListener("click", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      if (drawnHand) {
+        drawnHand.forEach((unit, index) => {
+          const x = index * buttonWidth;
+          const y = canvas.height - buttonHeight;
+
+          const cooldownDuration = cooldowns[index];
+          const now = Date.now();
+          const elapsed = now - cooldownStartTimes[index];
+          const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
+
+          if (
+            clickX > x &&
+            clickX < x + buttonWidth &&
+            clickY > y &&
+            clickY < y + buttonHeight &&
+            remainingCooldown === 0 &&
+            userMoney >= unit.cost
+          ) {
+            console.log("Spawning " + unit.name);
+            sendUnit(unit.name);
+
+            userMoney -= unit.cost;
+            cooldownStartTimes[index] = Date.now();
+          }
+        });
+      }
     });
 
     setInterval(drawBattlefield, 10);
