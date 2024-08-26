@@ -5,7 +5,8 @@ export type MessageType =
   | { type: "Text"; data: string }
   | { type: "Disconnect" }
   | { type: "BeginGame" }
-  | { type: "SpawnUnit"; data: string };
+  | { type: "SpawnUnit"; data: string }
+  | { type: "DmgPing"; data: string };
 
 interface Chat {
   Chat: [string, string];
@@ -35,6 +36,14 @@ interface UnitSpawned {
   UnitSpawned: [boolean, Unit];
 }
 
+interface NewTowerHealth {
+  NewTowerHealth: [boolean, number];
+}
+
+interface Win { };
+interface Lose { };
+interface WinByDisconnect { };
+
 export type Unit = {
   name: string;
   emoji: string;
@@ -55,7 +64,11 @@ export type ServerResponseType =
   | UserLeave
   | StartGame
   | DrawnHand
-  | UnitSpawned;
+  | UnitSpawned
+  | NewTowerHealth
+  | Win
+  | WinByDisconnect
+  | Lose;
 
 export interface ServerResponse {
   message: ServerResponseType;

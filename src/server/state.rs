@@ -33,6 +33,16 @@ impl<'a> State<'a> {
         }
     }
 
+    pub fn damage(&mut self, to: Uuid, dmg: usize) -> Option<usize> {
+        if let UserStatus::InGame(battle_id) = *self.users[&to].status() {
+            let battle = self.battles.get_mut(&battle_id).unwrap();
+
+            battle.damage_tick(to, dmg)
+        } else {
+            None
+        }
+    }
+
     pub fn get_opponent(&self, id: Uuid) -> Option<Uuid> {
         let user_state = *self.users[&id].status();
         if let UserStatus::InGame(battle_id) = user_state {

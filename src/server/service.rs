@@ -91,6 +91,12 @@ impl Service<Request<body::Incoming>> for ServerService {
                                             user_id,
                                             MessageType::PlayUnit(parsed.data.unwrap()),
                                         ))?,
+                                        "DmgPing" => tx.send(ServerMessage::new(
+                                            user_id,
+                                            MessageType::DmgPing(
+                                                parsed.data.unwrap().parse::<usize>().unwrap(),
+                                            ),
+                                        ))?,
                                         _ => {}
                                     }
                                 }
@@ -174,6 +180,7 @@ pub enum MessageType {
     Text(String),
     ConnectWs(WebSocketWriteStream),
     PlayUnit(String),
+    DmgPing(usize),
     BeginGame,
     Disconnect,
 }
@@ -199,6 +206,10 @@ pub enum ResponseType<'a> {
     DrawnHand(Box<[Unit<'a>; GAME_HAND_SIZE]>),
     // True if spawned from client, false if not
     UnitSpawned(bool, Box<Unit<'a>>),
+    NewTowerHealth(bool, usize),
+    Win,
+    WinByDisconnect,
+    Lose,
 }
 
 /// Type for interfacing with TypeScript WebSocket

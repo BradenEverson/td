@@ -8,7 +8,6 @@ let cooldowns;
 let userMoney = 50;
 function handleServerResponse(response) {
     if ("Chat" in response.message) {
-        console.log("Chat message");
         let message = response.message.Chat[0] + ": " + response.message.Chat[1];
         displayMessage(message);
     }
@@ -56,13 +55,15 @@ function handleServerResponse(response) {
             };
             enemyUnits.push(unit_metadata);
         }
-    }
+    } /*else if ("WinByDisconnect" in response.message) {
+      alert("Opponent has left, you win!");
+      window.location.reload();
+    } */
     else {
         console.log(response.message);
     }
 }
 function updateAllUnits() {
-    console.log("Updating units");
     for (let i = 0; i < playerUnits.length; i++) {
         let unit = playerUnits[i];
         unit.position[0] += unit.unit.speed / 10;
@@ -127,7 +128,6 @@ function switchToGameView(username, opponentName) {
                         const y = canvas.height - buttonHeight;
                         const cooldownDuration = cooldowns[index];
                         const elapsed = now - cooldownStartTimes[index];
-                        console.log("Elapsed on " + unit.name + ": " + elapsed);
                         const remainingCooldown = Math.max(cooldownDuration - elapsed, 0);
                         const cooldownPercentage = remainingCooldown / cooldownDuration;
                         ctx.fillStyle =
@@ -204,7 +204,6 @@ function switchToGameView(username, opponentName) {
                         clickY < y + buttonHeight &&
                         remainingCooldown === 0 &&
                         userMoney >= unit.cost) {
-                        console.log("Spawning " + unit.name);
                         sendUnit(unit.name);
                         userMoney -= unit.cost;
                         cooldownStartTimes[index] = Date.now();

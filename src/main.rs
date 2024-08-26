@@ -95,7 +95,19 @@ async fn main() {
                 }
                 MessageType::Disconnect => {
                     let mut state = state.write().await;
+
+                    let possible_enemy = state.get_opponent(msg.from);
+
+                    if let Some(enemy) = possible_enemy {
+                        let win_by_default = ServerResponse::new(ResponseType::WinByDisconnect);
+                        state
+                            .broadcast_to(win_by_default, &[enemy])
+                            .await
+                            .expect("Failed to broadcast to user")
+                    }
+
                     let name = state.get_name(msg.from);
+
                     if let Some(name) = name {
                         let response = ServerResponse::new(ResponseType::UserLeave(name.clone()));
                         state
@@ -170,6 +182,53 @@ async fn main() {
                         .broadcast_to(response_to_opponent, &[opponent])
                         .await
                         .expect("Failed to broadcast message");
+                }
+                MessageType::DmgPing(dmg) => {
+                    let opponent = {
+                        state
+                            .read()
+                            .await
+                            .get_opponent(msg.from)
+                            .expect("User wasn't in a battle but expected an opponent")
+                    };
+
+                    let mut state = state.write().await;
+                    let result = state.damage(opponent, dmg);
+
+                    match result {
+                        Some(remaining_hp) => {
+                            let health_update_to_sender = ServerResponse::new(
+                                ResponseType::NewTowerHealth(false, remaining_hp),
+                            );
+                            let health_update_to_enemy = ServerResponse::new(
+                                ResponseType::NewTowerHealth(true, remaining_hp),
+                            );
+
+                            state
+                                .broadcast_to(health_update_to_sender, &[msg.from])
+                                .await
+                                .expect("Failed to broadcast message back to sender");
+
+                            state
+                                .broadcast_to(health_update_to_enemy, &[msg.from])
+                                .await
+                                .expect("Failed to broadcast message back to sender");
+                        }
+                        None => {
+                            let win = ServerResponse::new(ResponseType::Win);
+                            let lose = ServerResponse::new(ResponseType::Lose);
+
+                            state
+                                .broadcast_to(win, &[msg.from])
+                                .await
+                                .expect("Failed to broadcast message back to sender");
+
+                            state
+                                .broadcast_to(lose, &[msg.from])
+                                .await
+                                .expect("Failed to broadcast message back to sender");
+                        }
+                    }
                 }
             }
         });
