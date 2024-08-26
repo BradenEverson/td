@@ -44,6 +44,7 @@ function handleServerResponse(response) {
                 unit: unit,
                 position: [userTowerX, userTowerY],
                 target: [opponentTowerX, opponentTowerY],
+                t: 0
             };
             playerUnits.push(unit_metadata);
         }
@@ -52,6 +53,7 @@ function handleServerResponse(response) {
                 unit: unit,
                 position: [opponentTowerX, opponentTowerY],
                 target: [userTowerX, userTowerY],
+                t: 0
             };
             enemyUnits.push(unit_metadata);
         }
@@ -67,10 +69,12 @@ function updateAllUnits() {
     for (let i = 0; i < playerUnits.length; i++) {
         let unit = playerUnits[i];
         unit.position[0] += unit.unit.speed / 10;
+        unit.t += 1 / (unit.unit.speed * 10);
     }
     for (let i = 0; i < enemyUnits.length; i++) {
         let unit = enemyUnits[i];
         unit.position[0] -= unit.unit.speed / 10;
+        unit.t += 1 / (unit.unit.speed * 10);
     }
 }
 function switchToGameView(username, opponentName) {
@@ -166,12 +170,12 @@ function switchToGameView(username, opponentName) {
                 for (let i = 0; i < playerUnits.length; i++) {
                     let unit = playerUnits[i];
                     ctx.font = `${45 * unit.unit.size}px Arial`;
-                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
+                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
                 }
                 for (let i = 0; i < enemyUnits.length; i++) {
                     let unit = enemyUnits[i];
                     ctx.font = `${45 * unit.unit.size}px Arial`;
-                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1]);
+                    ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
                 }
                 ctx.clearRect(canvas.width - 200, 0, 200, 50);
                 ctx.font = "30px Arial";
