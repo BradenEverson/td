@@ -157,7 +157,7 @@ async fn main() {
                     }
                 }
                 MessageType::PlayUnit(card_name) => {
-                    let unit = *UNITS()
+                    let unit = *UNITS
                         .iter()
                         .find(|unit| unit.get_name() == card_name)
                         .expect("Unit doesn't exist :/");

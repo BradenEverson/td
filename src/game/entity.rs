@@ -32,7 +32,7 @@ pub enum AttackType {
 }
 
 pub fn draw_hand<'a, const NUM: usize>() -> Option<[Unit<'a>; NUM]> {
-    let cards = UNITS();
+    let cards = UNITS.clone();
     if NUM > cards.len() {
         return None;
     }
