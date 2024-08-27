@@ -82,7 +82,7 @@ function updateAllUnits() {
         if ((distance - unit.unit.size) < 3) {
             unit.attackCooldown += unit.unit.speed / 10;
             if (unit.attackCooldown >= 100) {
-                //Send tower attack to server
+                damagePing(unit.unit.power);
                 unit.attackCooldown = 0;
             }
         }
@@ -316,6 +316,13 @@ export function startBattle() {
         type: "BeginGame",
     };
     sendMessage(beginGame);
+}
+function damagePing(dmg) {
+    let msg = {
+        type: "DmgPing",
+        data: dmg.toString()
+    };
+    sendMessage(msg);
 }
 function sendMessage(msg) {
     let messageString = JSON.stringify(msg);
