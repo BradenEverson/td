@@ -261,13 +261,21 @@ function switchToGameView(username: string, opponentName: string) {
 
         for (let i = 0; i < playerUnits.length; i++) {
           let unit = playerUnits[i];
+          ctx.save();
+          ctx.translate(unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
+          ctx.rotate(-1 * unit.attackCooldown / 300);
           ctx.font = `${45 * unit.unit.size}px Arial`;
-          ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
+          ctx.fillText(unit.unit.emoji, 0, 0);
+          ctx.restore();
         }
         for (let i = 0; i < enemyUnits.length; i++) {
           let unit = enemyUnits[i];
+          ctx.save();
+          ctx.translate(unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
+          ctx.rotate(unit.attackCooldown / 300);
           ctx.font = `${45 * unit.unit.size}px Arial`;
-          ctx.fillText(unit.unit.emoji, unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
+          ctx.fillText(unit.unit.emoji, 0, 0);
+          ctx.restore();
         }
 
         ctx.clearRect(canvas.width - 200, 0, 200, 50);
