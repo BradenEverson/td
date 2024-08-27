@@ -11,6 +11,9 @@ type UnitMetadata = {
   unit: Unit;
   position: [number, number];
   target: [number, number];
+
+  attackCooldown: number;
+
   t: number
 };
 
@@ -68,6 +71,7 @@ function handleServerResponse(response: ServerResponse) {
         unit: unit,
         position: [userTowerX, userTowerY],
         target: [opponentTowerX, opponentTowerY],
+        attackCooldown: 0,
         t: 0
       };
 
@@ -77,6 +81,7 @@ function handleServerResponse(response: ServerResponse) {
         unit: unit,
         position: [opponentTowerX, opponentTowerY],
         target: [userTowerX, userTowerY],
+        attackCooldown: 0,
         t: 0
       };
 
@@ -98,17 +103,34 @@ function updateAllUnits() {
   for (let i = 0; i < playerUnits.length; i++) {
     let unit = playerUnits[i];
     let distance = dist(unit.position, [opponentTowerX, opponentTowerY]);
-    console.log(unit.unit.name + " distance from tower: " + distance);
+    //console.log(unit.unit.name + " distance from tower: " + distance);
 
-    unit.position[0] += unit.unit.speed / 10;
+    if ((distance - unit.unit.size) < 3) {
+      unit.attackCooldown += unit.unit.speed / 10;
+      if (unit.attackCooldown >= 100) {
+        //Send tower attack to server
+
+        unit.attackCooldown = 0;
+      }
+    } else {
+      unit.position[0] += unit.unit.speed / 10;
+    }
     unit.t += 1 / (unit.unit.speed * 10);
   }
   for (let i = 0; i < enemyUnits.length; i++) {
     let unit = enemyUnits[i];
     let distance = dist(unit.position, [userTowerX, userTowerY]);
-    console.log(unit.unit.name + " distance from tower: " + distance);
+    //console.log(unit.unit.name + " distance from tower: " + distance);
+    if ((distance - unit.unit.size) < 3) {
+      unit.attackCooldown += unit.unit.speed / 10;
+      if (unit.attackCooldown >= 100) {
+        //Send tower attack to server
 
-    unit.position[0] -= unit.unit.speed / 10;
+        unit.attackCooldown = 0;
+      }
+    } else {
+      unit.position[0] -= unit.unit.speed / 10;
+    }
     unit.t += 1 / (unit.unit.speed * 10);
   }
 }
