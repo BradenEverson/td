@@ -5,4 +5,4 @@ This project exists as the biggest challenge in my journey to understand websock
 
 As such, one area that could be significantly improved upon is the way the *actual* game is being handled. Specifically, most of the game logic occurs on the TypeScript frontend, only communicating with Rust to synchronize and update state. This of course is not good, and will possibly be revisited at a later stage when I'm satisfied with the parts of the project that I wanted to learn :)
 
-![Sample game footage](./images/actionshot.png)
+![Sample game footage](./actionshot.png)
