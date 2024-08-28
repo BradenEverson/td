@@ -99,7 +99,8 @@ async fn main() {
                     let possible_enemy = state.get_opponent(msg.from);
 
                     if let Some(enemy) = possible_enemy {
-                        let win_by_default = ServerResponse::new(ResponseType::WinByDisconnect);
+                        let win_by_default =
+                            ServerResponse::new(ResponseType::WinByDisconnect(msg.from));
                         state
                             .broadcast_to(win_by_default, &[enemy])
                             .await
@@ -215,8 +216,8 @@ async fn main() {
                                 .expect("Failed to broadcast message back to sender");
                         }
                         None => {
-                            let win = ServerResponse::new(ResponseType::Win);
-                            let lose = ServerResponse::new(ResponseType::Lose);
+                            let win = ServerResponse::new(ResponseType::Win(msg.from));
+                            let lose = ServerResponse::new(ResponseType::Lose(opponent));
 
                             state
                                 .broadcast_to(win, &[msg.from])

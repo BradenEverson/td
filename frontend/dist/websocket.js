@@ -1,4 +1,5 @@
 export const socket = new WebSocket("/");
+let gameDone = false;
 let playerUnits = [];
 let enemyUnits = [];
 let drawnHand = null;
@@ -74,10 +75,21 @@ function handleServerResponse(response) {
             };
             enemyUnits.push(unit_metadata);
         }
-    } /*else if ("WinByDisconnect" in response.message) {
-      alert("Opponent has left, you win!");
-      window.location.reload();
-    } */
+    }
+    else if ("WinByDisconnect" in response.message && !gameDone) {
+        alert("Opponent has left, you win!");
+        window.location.reload();
+    }
+    else if ("Win" in response.message) {
+        gameDone = true;
+        alert("You have defeated your opponent! Final health of your tower was: " + userTowerHealth);
+        window.location.reload();
+    }
+    else if ("Lose" in response.message) {
+        gameDone = true;
+        alert("Your enemy has destroyed your tower, you lose.");
+        window.location.reload();
+    }
     else {
         console.log(response.message);
     }

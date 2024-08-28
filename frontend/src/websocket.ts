@@ -1,7 +1,6 @@
 import {
   MessageType,
   ServerResponse,
-  ServerResponseType,
   Unit,
 } from "./messages";
 
@@ -16,6 +15,8 @@ type UnitMetadata = {
 
   t: number
 };
+
+let gameDone: boolean = false;
 
 let playerUnits: Array<UnitMetadata> = [];
 let enemyUnits: Array<UnitMetadata> = [];
@@ -97,10 +98,18 @@ function handleServerResponse(response: ServerResponse) {
 
       enemyUnits.push(unit_metadata);
     }
-  } /*else if ("WinByDisconnect" in response.message) {
+  } else if ("WinByDisconnect" in response.message && !gameDone) {
     alert("Opponent has left, you win!");
     window.location.reload();
-  } */ else {
+  } else if ("Win" in response.message) {
+    gameDone = true;
+    alert("You have defeated your opponent! Final health of your tower was: " + userTowerHealth);
+    window.location.reload();
+  } else if ("Lose" in response.message) {
+    gameDone = true;
+    alert("Your enemy has destroyed your tower, you lose.");
+    window.location.reload();
+  } else {
     console.log(response.message);
   }
 }

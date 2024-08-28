@@ -40,9 +40,9 @@ interface NewTowerHealth {
   NewTowerHealth: [boolean, number];
 }
 
-interface Win { };
-interface Lose { };
-interface WinByDisconnect { };
+interface Win { Win: Uuid; }
+interface Lose { Lose: Uuid; }
+interface WinByDisconnect { WinByDisconnect: Uuid; }
 
 export type Unit = {
   name: string;

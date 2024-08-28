@@ -207,9 +207,9 @@ pub enum ResponseType<'a> {
     // True if spawned from client, false if not
     UnitSpawned(bool, Box<Unit<'a>>),
     NewTowerHealth(bool, usize),
-    Win,
-    WinByDisconnect,
-    Lose,
+    Win(Uuid),
+    WinByDisconnect(Uuid),
+    Lose(Uuid),
 }
 
 /// Type for interfacing with TypeScript WebSocket
