@@ -103,38 +103,75 @@ function handleServerResponse(response) {
 function dist(pointA, pointB) {
     return Math.sqrt(Math.pow((pointB[0] - pointA[0]), 2) + Math.pow((pointB[1] - pointA[1]), 2));
 }
+function findClosestEnemy(unit, enemies) {
+    let closestEnemy = null;
+    let minDistance = Infinity;
+    for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        let distance = dist(unit.position, enemy.position);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestEnemy = enemy;
+        }
+    }
+    return closestEnemy;
+}
 function updateAllUnits() {
     for (let i = 0; i < playerUnits.length; i++) {
-        let unit = playerUnits[i];
-        let distance = dist(unit.position, [opponentTowerX, opponentTowerY]);
-        //console.log(unit.unit.name + " distance from tower: " + distance);
-        if ((distance - unit.unit.size) < 3) {
-            unit.attackCooldown += unit.unit.speed / 10;
-            if (unit.attackCooldown >= 100) {
-                damagePing(unit.unit.power);
-                unit.attackCooldown = 0;
+        let playerUnit = playerUnits[i];
+        let closestEnemy = findClosestEnemy(playerUnit, enemyUnits);
+        if (closestEnemy && dist(playerUnit.position, closestEnemy.position) <= (playerUnit.unit.size + closestEnemy.unit.size) * 22.5) {
+            playerUnit.attackCooldown += playerUnit.unit.speed / 10;
+            if (playerUnit.attackCooldown >= 100) {
+                closestEnemy.unit.health -= playerUnit.unit.power;
+                playerUnit.attackCooldown = 0;
+                if (closestEnemy.unit.health <= 0) {
+                    enemyUnits.splice(enemyUnits.indexOf(closestEnemy), 1);
+                    userMoney += closestEnemy.unit.cost / 10;
+                }
             }
         }
         else {
-            unit.position[0] += unit.unit.speed / 10;
+            let distance = dist(playerUnit.position, [opponentTowerX, opponentTowerY]);
+            if ((distance - (playerUnit.unit.size * 22.5)) < 3) {
+                playerUnit.attackCooldown += playerUnit.unit.speed / 10;
+                if (playerUnit.attackCooldown >= 100) {
+                    damagePing(playerUnit.unit.power);
+                    playerUnit.attackCooldown = 0;
+                }
+            }
+            else {
+                playerUnit.position[0] += playerUnit.unit.speed / 10;
+            }
         }
-        unit.t += 1 / (unit.unit.speed * 10);
+        playerUnit.t += 1 / (playerUnit.unit.speed * 10);
     }
     for (let i = 0; i < enemyUnits.length; i++) {
-        let unit = enemyUnits[i];
-        let distance = dist(unit.position, [userTowerX, userTowerY]);
-        //console.log(unit.unit.name + " distance from tower: " + distance);
-        if ((distance - unit.unit.size) < 3) {
-            unit.attackCooldown += unit.unit.speed / 10;
-            if (unit.attackCooldown >= 100) {
-                //Send tower attack to server
-                unit.attackCooldown = 0;
+        let enemyUnit = enemyUnits[i];
+        let closestPlayerUnit = findClosestEnemy(enemyUnit, playerUnits);
+        if (closestPlayerUnit && dist(enemyUnit.position, closestPlayerUnit.position) <= (enemyUnit.unit.size + closestPlayerUnit.unit.size) * 22.5) {
+            enemyUnit.attackCooldown += enemyUnit.unit.speed / 10;
+            if (enemyUnit.attackCooldown >= 100) {
+                closestPlayerUnit.unit.health -= enemyUnit.unit.power;
+                enemyUnit.attackCooldown = 0;
+                if (closestPlayerUnit.unit.health <= 0) {
+                    playerUnits.splice(playerUnits.indexOf(closestPlayerUnit), 1);
+                }
             }
         }
         else {
-            unit.position[0] -= unit.unit.speed / 10;
+            let distance = dist(enemyUnit.position, [userTowerX, userTowerY]);
+            if ((distance - enemyUnit.unit.size) < 3) {
+                enemyUnit.attackCooldown += enemyUnit.unit.speed / 10;
+                if (enemyUnit.attackCooldown >= 100) {
+                    enemyUnit.attackCooldown = 0;
+                }
+            }
+            else {
+                enemyUnit.position[0] -= enemyUnit.unit.speed / 10;
+            }
         }
-        unit.t += 1 / (unit.unit.speed * 10);
+        enemyUnit.t += 1 / (enemyUnit.unit.speed * 10);
     }
 }
 function switchToGameView(username, opponentName) {
