@@ -27,10 +27,6 @@ function handleServerResponse(response) {
         let message = response.message.UserJoin + " has joined the server";
         displayColoredMessage(message, "#80a4bf");
     }
-    else if ("UserLeave" in response.message) {
-        let message = response.message.UserLeave + " has disconnected :(";
-        displayColoredMessage(message, "#f07269");
-    }
     else if ("NewTowerHealth" in response.message) {
         let [user, health] = response.message.NewTowerHealth;
         if (user) {
