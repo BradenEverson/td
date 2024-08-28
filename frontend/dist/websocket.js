@@ -25,6 +25,15 @@ function handleServerResponse(response) {
         let message = response.message.UserLeave + " has disconnected :(";
         displayColoredMessage(message, "#f07269");
     }
+    else if ("NewTowerHealth" in response.message) {
+        let [user, health] = response.message.NewTowerHealth;
+        if (user) {
+            userTowerHealth = health;
+        }
+        else {
+            enemyTowerHealth = health;
+        }
+    }
     else if ("StartGame" in response.message) {
         const userName = response.message.StartGame[0];
         const opponentName = response.message.StartGame[1];
@@ -159,7 +168,7 @@ function switchToGameView(username, opponentName) {
                     ctx.fillStyle = "red";
                     ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
                     ctx.fillStyle = "green";
-                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth * (userTowerHealth / 15000), healthBarHeight);
+                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth * (enemyTowerHealth / 15000), healthBarHeight);
                 }
                 {
                     const healthBarWidth = towerSize;

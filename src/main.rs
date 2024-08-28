@@ -193,15 +193,15 @@ async fn main() {
                     };
 
                     let mut state = state.write().await;
-                    let result = state.damage(msg.from, dmg);
+                    let result = state.damage(opponent, dmg);
 
                     match result {
                         Some(remaining_hp) => {
                             let health_update_to_sender = ServerResponse::new(
-                                ResponseType::NewTowerHealth(true, remaining_hp),
+                                ResponseType::NewTowerHealth(false, remaining_hp),
                             );
                             let health_update_to_enemy = ServerResponse::new(
-                                ResponseType::NewTowerHealth(false, remaining_hp),
+                                ResponseType::NewTowerHealth(true, remaining_hp),
                             );
 
                             state
@@ -219,12 +219,12 @@ async fn main() {
                             let lose = ServerResponse::new(ResponseType::Lose);
 
                             state
-                                .broadcast_to(lose, &[msg.from])
+                                .broadcast_to(win, &[msg.from])
                                 .await
                                 .expect("Failed to broadcast message back to sender");
 
                             state
-                                .broadcast_to(win, &[opponent])
+                                .broadcast_to(lose, &[opponent])
                                 .await
                                 .expect("Failed to broadcast message back to sender");
                         }
