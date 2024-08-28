@@ -10,6 +10,8 @@ let opponentTowerX;
 let opponentTowerY;
 let userTowerX;
 let userTowerY;
+let userTowerHealth = 15000;
+let enemyTowerHealth = 15000;
 function handleServerResponse(response) {
     if ("Chat" in response.message) {
         let message = response.message.Chat[0] + ": " + response.message.Chat[1];
@@ -148,6 +150,27 @@ function switchToGameView(username, opponentName) {
                 ctx.font = `${canvas.width * 0.03}px Arial`;
                 ctx.fillText(username, userTowerX, userTowerY - towerSize);
                 ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
+                // Draw the user tower's health bar
+                {
+                    const healthBarWidth = towerSize;
+                    const healthBarHeight = canvas.height * 0.01;
+                    const healthBarX = userTowerX - healthBarWidth / 2;
+                    const healthBarY = userTowerY - (towerSize * 0.75) - healthBarHeight;
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth * (userTowerHealth / 15000), healthBarHeight);
+                }
+                {
+                    const healthBarWidth = towerSize;
+                    const healthBarHeight = canvas.height * 0.01;
+                    const healthBarX = opponentTowerX - healthBarWidth / 2;
+                    const healthBarY = opponentTowerY - (towerSize * 0.75) - healthBarHeight;
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(healthBarX, healthBarY, healthBarWidth * (userTowerHealth / 15000), healthBarHeight);
+                }
                 // Draw The Card Buttons:
                 if (drawnHand) {
                     if (!drawnHandSetup) {

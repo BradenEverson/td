@@ -33,6 +33,9 @@ let opponentTowerY: number;
 let userTowerX: number;
 let userTowerY: number;
 
+let userTowerHealth: number = 15000;
+let enemyTowerHealth: number = 15000;
+
 function handleServerResponse(response: ServerResponse) {
   if ("Chat" in response.message) {
     let message: string =
@@ -189,6 +192,44 @@ function switchToGameView(username: string, opponentName: string) {
 
         ctx.fillText(opponentName, opponentTowerX, opponentTowerY - towerSize);
 
+        // Draw the user tower's health bar
+        {
+          const healthBarWidth = towerSize;
+          const healthBarHeight = canvas.height * 0.01;
+          const healthBarX = userTowerX - healthBarWidth / 2;
+          const healthBarY = userTowerY - (towerSize * 0.75) - healthBarHeight;
+
+          ctx.fillStyle = "red";
+          ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+          ctx.fillStyle = "green";
+          ctx.fillRect(
+            healthBarX,
+            healthBarY,
+            healthBarWidth * (userTowerHealth / 15000),
+            healthBarHeight
+          );
+        }
+
+        {
+          const healthBarWidth = towerSize;
+          const healthBarHeight = canvas.height * 0.01;
+          const healthBarX = opponentTowerX - healthBarWidth / 2;
+          const healthBarY = opponentTowerY - (towerSize * 0.75) - healthBarHeight;
+
+          ctx.fillStyle = "red";
+          ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+          ctx.fillStyle = "green";
+          ctx.fillRect(
+            healthBarX,
+            healthBarY,
+            healthBarWidth * (userTowerHealth / 15000),
+            healthBarHeight
+          );
+        }
+
+
         // Draw The Card Buttons:
         if (drawnHand) {
           if (!drawnHandSetup) {
@@ -276,6 +317,7 @@ function switchToGameView(username: string, opponentName: string) {
           ctx.fillText(unit.unit.emoji, 0, 0);
           ctx.restore();
         }
+
 
         ctx.clearRect(canvas.width - 200, 0, 200, 50);
         ctx.font = "30px Arial";
