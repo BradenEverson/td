@@ -16,7 +16,12 @@ let enemyTowerHealth = 15000;
 function handleServerResponse(response) {
     if ("Chat" in response.message) {
         let message = response.message.Chat[0] + ": " + response.message.Chat[1];
-        displayMessage(message);
+        if (response.message.Chat[0] == "Server") {
+            displayColoredMessage(message, "#a32791");
+        }
+        else {
+            displayMessage(message);
+        }
     }
     else if ("UserJoin" in response.message) {
         let message = response.message.UserJoin + " has joined the server";
@@ -78,20 +83,21 @@ function handleServerResponse(response) {
     }
     else if ("WinByDisconnect" in response.message && !gameDone) {
         alert("Opponent has left, you win!");
-        window.location.reload();
+        gameDone = true;
     }
     else if ("Win" in response.message) {
-        gameDone = true;
         alert("You have defeated your opponent! Final health of your tower was: " + userTowerHealth);
-        window.location.reload();
+        gameDone = true;
     }
     else if ("Lose" in response.message) {
-        gameDone = true;
         alert("Your enemy has destroyed your tower, you lose.");
-        window.location.reload();
+        gameDone = true;
     }
     else {
         console.log(response.message);
+    }
+    if (gameDone) {
+        window.location.reload();
     }
 }
 function dist(pointA, pointB) {

@@ -219,6 +219,10 @@ async fn main() {
                             let win = ServerResponse::new(ResponseType::Win(msg.from));
                             let lose = ServerResponse::new(ResponseType::Lose(opponent));
 
+                            let user_name = { state.get_name(msg.from).unwrap().clone() };
+
+                            let opponent_name = { state.get_name(opponent).unwrap().clone() };
+
                             state
                                 .broadcast_to(win, &[msg.from])
                                 .await
@@ -228,6 +232,17 @@ async fn main() {
                                 .broadcast_to(lose, &[opponent])
                                 .await
                                 .expect("Failed to broadcast message back to sender");
+
+                            state
+                                .broadcast(ServerResponse::new(ResponseType::Chat(
+                                    "Server".to_string(),
+                                    format!(
+                                        "{} has won a game against {}",
+                                        user_name, opponent_name
+                                    ),
+                                )))
+                                .await
+                                .expect("Failed to broadcast message to all users");
                         }
                     }
                 }
