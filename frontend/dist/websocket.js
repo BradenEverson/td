@@ -45,7 +45,7 @@ function handleServerResponse(response) {
         drawnHand = response.message.DrawnHand;
         setInterval(() => {
             userMoney += 1;
-        }, 100);
+        }, 30);
     }
     else if ("UnitSpawned" in response.message) {
         const canvas = document.getElementById("game-canvas");
@@ -61,7 +61,7 @@ function handleServerResponse(response) {
                 unit: unit,
                 position: [userTowerX, userTowerY],
                 target: [opponentTowerX, opponentTowerY],
-                attackCooldown: 0,
+                attackCooldown: 70,
                 t: 0
             };
             playerUnits.push(unit_metadata);
@@ -71,7 +71,7 @@ function handleServerResponse(response) {
                 unit: unit,
                 position: [opponentTowerX, opponentTowerY],
                 target: [userTowerX, userTowerY],
-                attackCooldown: 0,
+                attackCooldown: 70,
                 t: 0
             };
             enemyUnits.push(unit_metadata);
@@ -117,27 +117,27 @@ function updateAllUnits() {
         let playerUnit = playerUnits[i];
         let closestEnemy = findClosestEnemy(playerUnit, enemyUnits);
         if (closestEnemy && dist(playerUnit.position, closestEnemy.position) <= (playerUnit.unit.size + closestEnemy.unit.size) * 22.5) {
-            playerUnit.attackCooldown += playerUnit.unit.speed / 10;
+            playerUnit.attackCooldown += playerUnit.unit.speed / 4;
             if (playerUnit.attackCooldown >= 100) {
                 closestEnemy.unit.health -= playerUnit.unit.power;
                 playerUnit.attackCooldown = 0;
                 if (closestEnemy.unit.health <= 0) {
                     enemyUnits.splice(enemyUnits.indexOf(closestEnemy), 1);
-                    userMoney += closestEnemy.unit.cost / 10;
+                    userMoney += closestEnemy.unit.cost / 4;
                 }
             }
         }
         else {
             let distance = dist(playerUnit.position, [opponentTowerX, opponentTowerY]);
             if ((distance - (playerUnit.unit.size * 22.5)) < 3) {
-                playerUnit.attackCooldown += playerUnit.unit.speed / 10;
+                playerUnit.attackCooldown += playerUnit.unit.speed / 4;
                 if (playerUnit.attackCooldown >= 100) {
                     damagePing(playerUnit.unit.power);
                     playerUnit.attackCooldown = 0;
                 }
             }
             else {
-                playerUnit.position[0] += playerUnit.unit.speed / 10;
+                playerUnit.position[0] += playerUnit.unit.speed / 5;
             }
         }
         playerUnit.t += 1 / (playerUnit.unit.speed * 10);
@@ -146,7 +146,7 @@ function updateAllUnits() {
         let enemyUnit = enemyUnits[i];
         let closestPlayerUnit = findClosestEnemy(enemyUnit, playerUnits);
         if (closestPlayerUnit && dist(enemyUnit.position, closestPlayerUnit.position) <= (enemyUnit.unit.size + closestPlayerUnit.unit.size) * 22.5) {
-            enemyUnit.attackCooldown += enemyUnit.unit.speed / 10;
+            enemyUnit.attackCooldown += enemyUnit.unit.speed / 4;
             if (enemyUnit.attackCooldown >= 100) {
                 closestPlayerUnit.unit.health -= enemyUnit.unit.power;
                 enemyUnit.attackCooldown = 0;
@@ -158,13 +158,13 @@ function updateAllUnits() {
         else {
             let distance = dist(enemyUnit.position, [userTowerX, userTowerY]);
             if ((distance - enemyUnit.unit.size) < 3) {
-                enemyUnit.attackCooldown += enemyUnit.unit.speed / 10;
+                enemyUnit.attackCooldown += enemyUnit.unit.speed / 4;
                 if (enemyUnit.attackCooldown >= 100) {
                     enemyUnit.attackCooldown = 0;
                 }
             }
             else {
-                enemyUnit.position[0] -= enemyUnit.unit.speed / 10;
+                enemyUnit.position[0] -= enemyUnit.unit.speed / 5;
             }
         }
         enemyUnit.t += 1 / (enemyUnit.unit.speed * 10);
