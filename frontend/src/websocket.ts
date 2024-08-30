@@ -8,6 +8,7 @@ export const socket = new WebSocket("/");
 
 type UnitMetadata = {
   unit: Unit;
+  isOurs: boolean;
   position: [number, number];
   target: [number, number];
 
@@ -17,9 +18,12 @@ type UnitMetadata = {
 };
 
 let gameDone: boolean = false;
+let newUnitSpawned: boolean = false;
 
 let playerUnits: Array<UnitMetadata> = [];
 let enemyUnits: Array<UnitMetadata> = [];
+let allUnits: Array<UnitMetadata> = [];
+
 let drawnHand: Array<Unit> | null = null;
 let drawnHandSetup = false;
 
@@ -81,6 +85,7 @@ function handleServerResponse(response: ServerResponse) {
     if (isOurs) {
       let unit_metadata: UnitMetadata = {
         unit: unit,
+        isOurs: true,
         position: [userTowerX, userTowerY],
         target: [opponentTowerX, opponentTowerY],
         attackCooldown: 70,
@@ -91,6 +96,7 @@ function handleServerResponse(response: ServerResponse) {
     } else {
       let unit_metadata: UnitMetadata = {
         unit: unit,
+        isOurs: false,
         position: [opponentTowerX, opponentTowerY],
         target: [userTowerX, userTowerY],
         attackCooldown: 70,
@@ -98,6 +104,7 @@ function handleServerResponse(response: ServerResponse) {
       };
 
       enemyUnits.push(unit_metadata);
+      newUnitSpawned = true;
     }
   } else if ("WinByDisconnect" in response.message && !gameDone) {
     alert("Opponent has left, you win!");
@@ -358,26 +365,22 @@ function switchToGameView(username: string, opponentName: string) {
         }
 
         updateAllUnits();
+        if (newUnitSpawned) {
+          allUnits = playerUnits.concat(enemyUnits);
+          allUnits.sort();
+          newUnitSpawned = false;
+        }
 
-        for (let i = 0; i < playerUnits.length; i++) {
-          let unit = playerUnits[i];
+        for (let i = 0; i < allUnits.length; i++) {
+          let unit = allUnits[i];
           ctx.save();
           ctx.translate(unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
-          ctx.rotate(-1 * unit.attackCooldown / 300);
+          let shouldRotate = unit.isOurs ? -1 : 1;
+          ctx.rotate(shouldRotate * unit.attackCooldown / 300);
           ctx.font = `${45 * unit.unit.size}px Arial`;
           ctx.fillText(unit.unit.emoji, 0, 0);
           ctx.restore();
         }
-        for (let i = 0; i < enemyUnits.length; i++) {
-          let unit = enemyUnits[i];
-          ctx.save();
-          ctx.translate(unit.position[0], unit.position[1] + (2 * Math.sin(unit.t / 2)));
-          ctx.rotate(unit.attackCooldown / 300);
-          ctx.font = `${45 * unit.unit.size}px Arial`;
-          ctx.fillText(unit.unit.emoji, 0, 0);
-          ctx.restore();
-        }
-
 
         ctx.clearRect(canvas.width - 200, 0, 200, 50);
         ctx.font = "30px Arial";
