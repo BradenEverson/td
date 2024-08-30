@@ -18,7 +18,7 @@ pub type WebsocketMessageFuture<'a> = Send<
     Message,
 >;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct User<'a> {
     id: Uuid,
     name: Option<String>,
@@ -85,7 +85,7 @@ impl<'a> User<'a> {
     }
 }
 
-#[derive(Default, Copy, Clone, PartialEq, Eq)]
+#[derive(Default, Copy, Clone, PartialEq, Eq, Debug)]
 pub enum UserStatus {
     #[default]
     Lobby,
